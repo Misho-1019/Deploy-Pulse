@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import type { Monitor } from '../api/monitors';
 
 interface Props {
@@ -42,9 +43,12 @@ export default function MonitorCard({ monitor, onEdit, onDelete }: Props) {
                     : 'bg-gray-300'
               }`}
             />
-            <h3 className="font-medium text-gray-900 truncate">
+            <Link
+              to={`/monitors/${monitor.id}`}
+              className="font-medium text-gray-900 truncate hover:text-blue-600 transition-colors"
+            >
               {monitor.name}
-            </h3>
+            </Link>
           </div>
           <p className="text-sm text-gray-500 truncate">{monitor.url}</p>
         </div>

@@ -3,6 +3,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import AppLayout from './components/layouts/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
+import MonitorDetail from './pages/MonitorDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
@@ -21,6 +22,7 @@ export default function App() {
             }
           >
             <Route index element={<Dashboard />} />
+            <Route path="monitors/:id" element={<MonitorDetail />} />
           </Route>
         </Routes>
       </BrowserRouter>
