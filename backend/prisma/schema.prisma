@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -10,4 +5,85 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+enum MonitorMode {
+  KEEP_ALIVE
+  FULL_MONITORING
+}
+
+enum MonitorStatus {
+  UP
+  DOWN
+  PENDING
+}
+
+enum CheckStatus {
+  UP
+  DOWN
+}
+
+enum AlertType {
+  DOWN
+  RECOVERY
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  name      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  monitors Monitor[]
+}
+
+model Monitor {
+  id        String        @id @default(uuid())
+  name      String
+  url       String
+  mode      MonitorMode   @default(KEEP_ALIVE)
+  interval  Int           @default(300)
+  status    MonitorStatus @default(PENDING)
+  userId    String
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checks    Check[]
+  alerts    Alert[]
+  incidents Incident[]
+}
+
+model Check {
+  id           String      @id @default(uuid())
+  statusCode   Int?
+  responseTime Int?
+  error        String?
+  status       CheckStatus
+  checkedAt    DateTime    @default(now())
+  monitorId    String
+
+  monitor      Monitor     @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+}
+
+model Alert {
+  id        String    @id @default(uuid())
+  type      AlertType
+  message   String
+  read      Boolean   @default(false)
+  sentAt    DateTime  @default(now())
+  monitorId String
+
+  monitor   Monitor   @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+}
+
+model Incident {
+  id         String    @id @default(uuid())
+  startedAt  DateTime
+  resolvedAt DateTime?
+  monitorId  String
+
+  monitor    Monitor   @relation(fields: [monitorId], references: [id], onDelete: Cascade)
 }
