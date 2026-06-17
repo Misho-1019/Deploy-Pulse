@@ -6,6 +6,7 @@ import authRoutes from './routes/auth.js';
 import monitorRoutes from './routes/monitor.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { startScheduler } from './scheduler.js';
+import './workers/checkWorker.js';
 
 const app = express();
 
