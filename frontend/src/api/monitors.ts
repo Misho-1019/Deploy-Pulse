@@ -61,3 +61,18 @@ export function updateMonitor(
 export function deleteMonitor(id: string): Promise<void> {
   return client.delete(`/monitors/${id}`);
 }
+
+export function getUptimeStats(
+  id: string
+): Promise<{ day: number; week: number; month: number }> {
+  return client.get(`/monitors/${id}/uptime`).then((r) => r.data);
+}
+
+export function getResponseTimeData(
+  id: string,
+  period: string
+): Promise<Array<{ time: string; value: number }>> {
+  return client
+    .get(`/monitors/${id}/response-times`, { params: { period } })
+    .then((r) => r.data);
+}

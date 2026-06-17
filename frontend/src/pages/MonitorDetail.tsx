@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import * as monitorsApi from '../api/monitors';
 import type { Monitor, Check } from '../api/monitors';
+import UptimeBadges from '../components/UptimeBadges';
+import ResponseChart from '../components/ResponseChart';
 
 const STATUS_STYLES: Record<string, string> = {
   UP: 'bg-green-100 text-green-800',
@@ -121,6 +123,15 @@ export default function MonitorDetail() {
           </p>
         </div>
       </div>
+
+      {monitor.mode === 'FULL_MONITORING' && (
+        <>
+          <UptimeBadges monitorId={monitor.id} />
+          <div className="mb-6">
+            <ResponseChart monitorId={monitor.id} />
+          </div>
+        </>
+      )}
 
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-lg font-semibold text-gray-900">Check History</h3>

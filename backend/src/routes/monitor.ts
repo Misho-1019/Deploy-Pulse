@@ -6,6 +6,8 @@ import {
   getMonitor,
   updateMonitor,
   deleteMonitor,
+  getUptimeStats,
+  getResponseTimeData,
   AppError,
 } from "../services/monitor.js";
 
@@ -89,6 +91,38 @@ router.delete("/:id", async (req: AuthRequest, res, next) => {
     const id = String(req.params.id);
     await deleteMonitor(id, req.userId!);
     res.status(204).send();
+  } catch (err) {
+    if (err instanceof AppError) {
+      res.status(err.statusCode).json({ error: err.message });
+      return;
+    }
+    next(err);
+  }
+});
+
+router.get("/:id/uptime", async (req: AuthRequest, res, next) => {
+  try {
+    const stats = await getUptimeStats(String(req.params.id), req.userId!);
+    res.json(stats);
+  } catch (err) {
+    if (err instanceof AppError) {
+      res.status(err.statusCode).json({ error: err.message });
+      return;
+    }
+    next(err);
+  }
+});
+
+router.get("/:id/response-times", async (req: AuthRequest, res, next) => {
+  try {
+    const period =
+      typeof req.query.period === "string" ? req.query.period : "day";
+    const data = await getResponseTimeData(
+      String(req.params.id),
+      req.userId!,
+      period
+    );
+    res.json(data);
   } catch (err) {
     if (err instanceof AppError) {
       res.status(err.statusCode).json({ error: err.message });

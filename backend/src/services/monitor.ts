@@ -121,6 +121,66 @@ export async function deleteMonitor(id: string, userId: string) {
   await prisma.monitor.delete({ where: { id } });
 }
 
+export async function getUptimeStats(monitorId: string, userId: string) {
+  const monitor = await prisma.monitor.findFirst({ where: { id: monitorId, userId } });
+  if (!monitor) throw new AppError("Monitor not found", 404);
+
+  const now = new Date();
+  const periods: { key: string; since: Date }[] = [
+    { key: "day", since: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
+    { key: "week", since: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) },
+    { key: "month", since: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) },
+  ];
+
+  const result: Record<string, number> = {};
+
+  for (const { key, since } of periods) {
+    const groups = await prisma.check.groupBy({
+      by: ["status"],
+      where: { monitorId, checkedAt: { gte: since } },
+      _count: { status: true },
+    });
+
+    const total = groups.reduce((sum, g) => sum + g._count.status, 0);
+
+    if (total === 0) {
+      result[key] = 0;
+    } else {
+      const upCount = groups.find((g) => g.status === "UP")?._count.status ?? 0;
+      result[key] = Math.round((upCount / total) * 10000) / 100;
+    }
+  }
+
+  return result;
+}
+
+export async function getResponseTimeData(
+  monitorId: string,
+  userId: string,
+  period: string
+) {
+  const monitor = await prisma.monitor.findFirst({ where: { id: monitorId, userId } });
+  if (!monitor) throw new AppError("Monitor not found", 404);
+
+  const hours = period === "day" ? 24 : period === "week" ? 168 : 720;
+  const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+
+  const checks = await prisma.check.findMany({
+    where: {
+      monitorId,
+      checkedAt: { gte: since },
+      responseTime: { not: null },
+    },
+    select: { responseTime: true, checkedAt: true },
+    orderBy: { checkedAt: "asc" },
+  });
+
+  return checks.map((c) => ({
+    time: c.checkedAt.toISOString(),
+    value: c.responseTime as number,
+  }));
+}
+
 export class AppError extends Error {
   constructor(
     message: string,
