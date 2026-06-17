@@ -5,9 +5,9 @@ import { performCheck } from "../services/checker.js";
 const worker = new Worker(
   checkQueue.name,
   async (job) => {
-    const { monitorId, url, name } = job.data;
+    const { monitorId, url, name, mode } = job.data;
 
-    const result = await performCheck(monitorId, url);
+    const result = await performCheck(monitorId, url, mode);
     console.log(
       `[Worker] ${name} → ${result.status}` +
         (result.statusCode ? ` (${result.statusCode}, ${result.responseTime}ms)` : "") +

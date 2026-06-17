@@ -1,10 +1,24 @@
 import { prisma } from "../lib/prisma.js";
 import type { CheckStatus } from "../generated/prisma/client.js";
+import { sendDownAlert, sendRecoveryAlert } from "./alert.js";
 
 const CHECK_TIMEOUT_MS = 10_000;
 
-export async function performCheck(monitorId: string, url: string) {
+export async function performCheck(
+  monitorId: string,
+  url: string,
+  mode: string
+) {
   const start = performance.now();
+
+  // Get previous check to detect status change
+  const previousCheck = await prisma.check.findFirst({
+    where: { monitorId },
+    orderBy: { checkedAt: "desc" },
+    select: { status: true },
+  });
+
+  const prevStatus = previousCheck?.status ?? null;
 
   try {
     const controller = new AbortController();
@@ -39,6 +53,13 @@ export async function performCheck(monitorId: string, url: string) {
       }),
     ]);
 
+    await handleStatusTransition(
+      monitorId,
+      prevStatus,
+      checkStatus,
+      mode
+    );
+
     return { status: checkStatus, statusCode, responseTime };
   } catch (err: unknown) {
     const errorMessage =
@@ -48,20 +69,83 @@ export async function performCheck(monitorId: string, url: string) {
           : err.message
         : "Unknown error";
 
+    const checkStatus: CheckStatus = "DOWN";
+
     await prisma.$transaction([
       prisma.check.create({
         data: {
           monitorId,
           error: errorMessage,
-          status: "DOWN",
+          status: checkStatus,
         },
       }),
       prisma.monitor.update({
         where: { id: monitorId },
-        data: { status: "DOWN" },
+        data: { status: checkStatus },
       }),
     ]);
 
-    return { status: "DOWN" as const, statusCode: null, responseTime: null, error: errorMessage };
+    await handleStatusTransition(
+      monitorId,
+      prevStatus,
+      checkStatus,
+      mode
+    );
+
+    return {
+      status: checkStatus,
+      statusCode: null,
+      responseTime: null,
+      error: errorMessage,
+    };
+  }
+}
+
+async function handleStatusTransition(
+  monitorId: string,
+  prevStatus: CheckStatus | null,
+  newStatus: CheckStatus,
+  mode: string
+) {
+  // Status went from UP (or no previous check) to DOWN → create incident
+  if (prevStatus !== "DOWN" && newStatus === "DOWN") {
+    const incident = await prisma.incident.create({
+      data: {
+        monitorId,
+        startedAt: new Date(),
+      },
+    });
+
+    console.log(`[Incident] Created: monitor ${monitorId} is DOWN`);
+
+    if (mode === "FULL_MONITORING") {
+      const monitor = await prisma.monitor.findUnique({
+        where: { id: monitorId },
+        select: { name: true, url: true },
+      });
+      if (monitor) {
+        await sendDownAlert(monitorId, monitor.name, monitor.url);
+      }
+    }
+  }
+
+  // Status went from DOWN to UP → resolve incident
+  if (prevStatus === "DOWN" && newStatus === "UP") {
+    await prisma.incident.updateMany({
+      where: { monitorId, resolvedAt: null },
+      data: { resolvedAt: new Date() },
+    });
+
+    console.log(`[Incident] Resolved: monitor ${monitorId} is UP`);
+
+    if (mode === "FULL_MONITORING") {
+      const monitor = await prisma.monitor.findUnique({
+        where: { id: monitorId },
+        select: { name: true },
+      });
+      if (monitor) {
+        await sendRecoveryAlert(monitorId, monitor.name);
+      }
+    }
   }
 }

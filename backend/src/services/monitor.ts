@@ -181,6 +181,16 @@ export async function getResponseTimeData(
   }));
 }
 
+export async function getIncidents(monitorId: string, userId: string) {
+  const monitor = await prisma.monitor.findFirst({ where: { id: monitorId, userId } });
+  if (!monitor) throw new AppError("Monitor not found", 404);
+
+  return prisma.incident.findMany({
+    where: { monitorId },
+    orderBy: { startedAt: "desc" },
+  });
+}
+
 export class AppError extends Error {
   constructor(
     message: string,

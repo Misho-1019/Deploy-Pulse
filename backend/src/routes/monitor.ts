@@ -8,6 +8,7 @@ import {
   deleteMonitor,
   getUptimeStats,
   getResponseTimeData,
+  getIncidents,
   AppError,
 } from "../services/monitor.js";
 
@@ -123,6 +124,19 @@ router.get("/:id/response-times", async (req: AuthRequest, res, next) => {
       period
     );
     res.json(data);
+  } catch (err) {
+    if (err instanceof AppError) {
+      res.status(err.statusCode).json({ error: err.message });
+      return;
+    }
+    next(err);
+  }
+});
+
+router.get("/:id/incidents", async (req: AuthRequest, res, next) => {
+  try {
+    const incidents = await getIncidents(String(req.params.id), req.userId!);
+    res.json(incidents);
   } catch (err) {
     if (err instanceof AppError) {
       res.status(err.statusCode).json({ error: err.message });

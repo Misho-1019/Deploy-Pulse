@@ -76,3 +76,14 @@ export function getResponseTimeData(
     .get(`/monitors/${id}/response-times`, { params: { period } })
     .then((r) => r.data);
 }
+
+export interface Incident {
+  id: string;
+  startedAt: string;
+  resolvedAt: string | null;
+  monitorId: string;
+}
+
+export function getIncidents(id: string): Promise<Incident[]> {
+  return client.get(`/monitors/${id}/incidents`).then((r) => r.data);
+}

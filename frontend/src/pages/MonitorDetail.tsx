@@ -4,6 +4,7 @@ import * as monitorsApi from '../api/monitors';
 import type { Monitor, Check } from '../api/monitors';
 import UptimeBadges from '../components/UptimeBadges';
 import ResponseChart from '../components/ResponseChart';
+import IncidentTimeline from '../components/IncidentTimeline';
 
 const STATUS_STYLES: Record<string, string> = {
   UP: 'bg-green-100 text-green-800',
@@ -129,6 +130,9 @@ export default function MonitorDetail() {
           <UptimeBadges monitorId={monitor.id} />
           <div className="mb-6">
             <ResponseChart monitorId={monitor.id} />
+          </div>
+          <div className="mb-6">
+            <IncidentTimeline monitorId={monitor.id} />
           </div>
         </>
       )}
