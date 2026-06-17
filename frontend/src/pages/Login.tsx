@@ -12,7 +12,7 @@ export default function Login() {
     e.preventDefault();
     try {
       await login(email, password);
-      navigate('/');
+      navigate('/app');
     } catch {
       // error is set in context
     }

@@ -48,7 +48,7 @@ export default function MonitorDetail() {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500 mb-4">{error || 'Monitor not found'}</p>
-        <Link to="/" className="text-blue-600 hover:text-blue-500 text-sm font-medium">
+        <Link to="/app" className="text-blue-600 hover:text-blue-500 text-sm font-medium">
           Back to Dashboard
         </Link>
       </div>
@@ -61,7 +61,7 @@ export default function MonitorDetail() {
     <div>
       <div className="flex items-center gap-3 mb-6">
         <Link
-          to="/"
+          to="/app"
           className="text-gray-400 hover:text-gray-600 transition-colors"
         >
           &larr;
@@ -131,7 +131,7 @@ export default function MonitorDetail() {
           <div className="mb-6">
             <ResponseChart monitorId={monitor.id} />
           </div>
-          <div className="mb-6">
+          <div className="overflow-x-auto mb-6">
             <IncidentTimeline monitorId={monitor.id} />
           </div>
         </>
@@ -140,7 +140,7 @@ export default function MonitorDetail() {
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-lg font-semibold text-gray-900">Check History</h3>
         <button
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/app")}
           className="text-sm text-blue-600 hover:text-blue-500 font-medium"
         >
           Back to Dashboard
@@ -152,7 +152,7 @@ export default function MonitorDetail() {
           <p className="text-gray-400">Waiting for first check...</p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>

@@ -1,31 +1,45 @@
+import { Navigate } from 'react-router-dom';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AppLayout from './components/layouts/AppLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
+import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import MonitorDetail from './pages/MonitorDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
+function HomeRoute() {
+  const { token } = useAuth();
+  if (token) {
+    return <Navigate to="/app" replace />;
+  }
+  return <Landing />;
+}
+
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route
-            element={
-              <ProtectedRoute>
-                <AppLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Dashboard />} />
-            <Route path="monitors/:id" element={<MonitorDetail />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<HomeRoute />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route
+              element={
+                <ProtectedRoute>
+                  <AppLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/app" element={<Dashboard />} />
+              <Route path="/app/monitors/:id" element={<MonitorDetail />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

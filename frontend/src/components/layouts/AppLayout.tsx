@@ -8,7 +8,7 @@ export default function AppLayout() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <Link to="/" className="text-xl font-bold text-gray-900">
+          <Link to="/app" className="text-xl font-bold text-gray-900">
             DeployPulse
           </Link>
           <div className="flex items-center gap-4">

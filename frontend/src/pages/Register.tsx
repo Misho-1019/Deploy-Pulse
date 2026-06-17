@@ -13,7 +13,7 @@ export default function Register() {
     e.preventDefault();
     try {
       await register(email, password, name || undefined);
-      navigate('/');
+      navigate('/app');
     } catch {
       // error is set in context
     }
