@@ -1,0 +1,4 @@
+DeployPulse API running on http://localhost:3000
+Environment: development
+[Scheduler] Starting check scheduler (tick every 15s)
+[Scheduler] Started
