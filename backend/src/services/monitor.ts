@@ -191,6 +191,29 @@ export async function getIncidents(monitorId: string, userId: string) {
   });
 }
 
+export async function toggleChannel(
+  monitorId: string,
+  userId: string,
+  channel: string
+) {
+  const monitor = await prisma.monitor.findFirst({ where: { id: monitorId, userId } });
+  if (!monitor) throw new AppError("Monitor not found", 404);
+
+  if (channel !== "EMAIL" && channel !== "SLACK") {
+    throw new AppError("Invalid channel. Use EMAIL or SLACK", 400);
+  }
+
+  const channels = monitor.channels as string[];
+  const updated = channels.includes(channel)
+    ? channels.filter((c) => c !== channel)
+    : [...channels, channel];
+
+  return prisma.monitor.update({
+    where: { id: monitorId },
+    data: { channels: updated as any },
+  });
+}
+
 export class AppError extends Error {
   constructor(
     message: string,

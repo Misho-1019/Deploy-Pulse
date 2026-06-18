@@ -67,6 +67,13 @@ export default function Dashboard() {
     setEditing(null);
   }
 
+  async function handleToggleChannel(id: string, channel: string) {
+    const updated = await monitorsApi.toggleChannel(id, channel);
+    setMonitors((prev) =>
+      prev.map((m) => (m.id === id ? updated : m))
+    );
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -128,6 +135,7 @@ export default function Dashboard() {
               monitor={m}
               onEdit={openEdit}
               onDelete={handleDelete}
+              onToggleChannel={handleToggleChannel}
             />
           ))}
         </div>

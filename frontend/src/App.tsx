@@ -7,6 +7,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Landing from './pages/Landing';
 import Dashboard from './pages/Dashboard';
 import MonitorDetail from './pages/MonitorDetail';
+import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
@@ -36,6 +37,7 @@ export default function App() {
             >
               <Route path="/app" element={<Dashboard />} />
               <Route path="/app/monitors/:id" element={<MonitorDetail />} />
+              <Route path="/app/settings" element={<Settings />} />
             </Route>
           </Routes>
         </BrowserRouter>

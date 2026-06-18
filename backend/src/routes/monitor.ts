@@ -9,6 +9,7 @@ import {
   getUptimeStats,
   getResponseTimeData,
   getIncidents,
+  toggleChannel,
   AppError,
 } from "../services/monitor.js";
 
@@ -137,6 +138,28 @@ router.get("/:id/incidents", async (req: AuthRequest, res, next) => {
   try {
     const incidents = await getIncidents(String(req.params.id), req.userId!);
     res.json(incidents);
+  } catch (err) {
+    if (err instanceof AppError) {
+      res.status(err.statusCode).json({ error: err.message });
+      return;
+    }
+    next(err);
+  }
+});
+
+router.put("/:id/channels/toggle", async (req: AuthRequest, res, next) => {
+  try {
+    const { channel } = req.body;
+    if (!channel) {
+      res.status(400).json({ error: "channel is required (EMAIL or SLACK)" });
+      return;
+    }
+    const monitor = await toggleChannel(
+      String(req.params.id),
+      req.userId!,
+      String(channel)
+    );
+    res.json(monitor);
   } catch (err) {
     if (err instanceof AppError) {
       res.status(err.statusCode).json({ error: err.message });

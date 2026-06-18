@@ -5,6 +5,7 @@ interface Props {
   monitor: Monitor;
   onEdit: (monitor: Monitor) => void;
   onDelete: (id: string) => void;
+  onToggleChannel: (id: string, channel: string) => void;
 }
 
 const INTERVAL_LABELS: Record<number, string> = {
@@ -17,8 +18,15 @@ const INTERVAL_LABELS: Record<number, string> = {
   3600: '1h',
 };
 
-export default function MonitorCard({ monitor, onEdit, onDelete }: Props) {
+export default function MonitorCard({
+  monitor,
+  onEdit,
+  onDelete,
+  onToggleChannel,
+}: Props) {
   const isKeepAlive = monitor.mode === 'KEEP_ALIVE';
+  const hasEmail = monitor.channels.includes('EMAIL');
+  const hasSlack = monitor.channels.includes('SLACK');
 
   return (
     <div
@@ -102,6 +110,32 @@ export default function MonitorCard({ monitor, onEdit, onDelete }: Props) {
           </span>
         )}
       </div>
+
+      {!isKeepAlive && (
+        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+          <span className="text-xs text-gray-400">Notify via:</span>
+          <button
+            onClick={() => onToggleChannel(monitor.id, 'EMAIL')}
+            className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+              hasEmail
+                ? 'bg-blue-100 text-blue-700'
+                : 'bg-gray-100 text-gray-400'
+            }`}
+          >
+            {hasEmail ? '📧 Email' : '📧 Email'}
+          </button>
+          <button
+            onClick={() => onToggleChannel(monitor.id, 'SLACK')}
+            className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+              hasSlack
+                ? 'bg-green-100 text-green-700'
+                : 'bg-gray-100 text-gray-400'
+            }`}
+          >
+            {hasSlack ? '💬 Slack' : '💬 Slack'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

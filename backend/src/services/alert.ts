@@ -1,76 +1,39 @@
-import nodemailer from "nodemailer";
-import { env } from "../config/env.js";
 import { prisma } from "../lib/prisma.js";
+import { sendEmail, buildDownEmail, buildRecoveryEmail } from "./notifications/email.js";
+import { sendSlack } from "./notifications/slack.js";
+import type { NotificationChannel } from "../generated/prisma/client.js";
 
-let transporter: nodemailer.Transporter | null = null;
-
-function getTransporter() {
-  if (!transporter) {
-    if (!env.SMTP.HOST) {
-      return null;
-    }
-    transporter = nodemailer.createTransport({
-      host: env.SMTP.HOST,
-      port: env.SMTP.PORT,
-      secure: env.SMTP.PORT === 465,
-      auth: {
-        user: env.SMTP.USER,
-        pass: env.SMTP.PASS,
-      },
-    });
-  }
-  return transporter;
-}
-
-export async function sendDownAlert(
-  monitorId: string,
-  monitorName: string,
-  monitorUrl: string
-) {
-  // Get the user who owns this monitor
+export async function dispatchDownAlert(monitorId: string) {
   const monitor = await prisma.monitor.findUnique({
     where: { id: monitorId },
-    include: { user: { select: { email: true } } },
+    select: {
+      name: true,
+      url: true,
+      channels: true,
+      user: { select: { email: true, slackWebhookUrl: true } },
+    },
   });
 
   if (!monitor) return;
 
-  const subject = `DeployPulse Alert: ${monitorName} is DOWN`;
-  const html = `
-    <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto;">
-      <h2 style="color: #dc2626;">Monitor Down</h2>
-      <p><strong>${monitorName}</strong> is not responding.</p>
-      <table style="border-collapse: collapse; width: 100%;">
-        <tr>
-          <td style="padding: 8px; border: 1px solid #e5e7eb; background: #f9fafb; font-weight: 600;">URL</td>
-          <td style="padding: 8px; border: 1px solid #e5e7eb;">${monitorUrl}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px; border: 1px solid #e5e7eb; background: #f9fafb; font-weight: 600;">Time</td>
-          <td style="padding: 8px; border: 1px solid #e5e7eb;">${new Date().toLocaleString()}</td>
-        </tr>
-      </table>
-      <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
-        You'll receive another notification when the service recovers.
-      </p>
-    </div>
-  `;
+  const channels = monitor.channels as NotificationChannel[];
+  const email = buildDownEmail(monitor.name, monitor.url);
 
-  const t = getTransporter();
-
-  if (t) {
-    try {
-      await t.sendMail({
-        from: env.ALERT_FROM_EMAIL,
-        to: monitor.user.email,
-        subject,
-        html,
-      });
-    } catch (err) {
-      console.error("[Alert] Failed to send email:", err);
+  for (const channel of channels) {
+    if (channel === "EMAIL") {
+      await sendEmail({ to: monitor.user.email, ...email });
+      console.log(`[Alert] Email sent to ${monitor.user.email}`);
     }
-  } else {
-    console.log(`[Alert] SMTP not configured. Would send: "${subject}" to ${monitor.user.email}`);
+
+    if (channel === "SLACK" && monitor.user.slackWebhookUrl) {
+      await sendSlack({
+        webhookUrl: monitor.user.slackWebhookUrl,
+        monitorName: monitor.name,
+        monitorUrl: monitor.url,
+        isDown: true,
+      });
+      console.log(`[Alert] Slack sent for ${monitor.name}`);
+    }
   }
 
   // Record the alert
@@ -78,52 +41,76 @@ export async function sendDownAlert(
     data: {
       monitorId,
       type: "DOWN",
-      message: subject,
+      message: email.subject,
     },
   });
 }
 
-export async function sendRecoveryAlert(monitorId: string, monitorName: string) {
+export async function dispatchRecoveryAlert(monitorId: string) {
   const monitor = await prisma.monitor.findUnique({
     where: { id: monitorId },
-    include: { user: { select: { email: true } } },
+    select: {
+      name: true,
+      url: true,
+      channels: true,
+      user: { select: { email: true, slackWebhookUrl: true } },
+    },
   });
 
   if (!monitor) return;
 
-  const subject = `DeployPulse: ${monitorName} has recovered`;
-  const html = `
-    <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto;">
-      <h2 style="color: #16a34a;">Service Recovered</h2>
-      <p><strong>${monitorName}</strong> is back online.</p>
-      <p style="color: #6b7280; font-size: 14px;">
-        Time: ${new Date().toLocaleString()}
-      </p>
-    </div>
-  `;
+  const channels = monitor.channels as NotificationChannel[];
+  const email = buildRecoveryEmail(monitor.name);
 
-  const t = getTransporter();
-
-  if (t) {
-    try {
-      await t.sendMail({
-        from: env.ALERT_FROM_EMAIL,
-        to: monitor.user.email,
-        subject,
-        html,
-      });
-    } catch (err) {
-      console.error("[Alert] Failed to send email:", err);
+  for (const channel of channels) {
+    if (channel === "EMAIL") {
+      await sendEmail({ to: monitor.user.email, ...email });
+      console.log(`[Alert] Recovery email sent to ${monitor.user.email}`);
     }
-  } else {
-    console.log(`[Alert] SMTP not configured. Would send: "${subject}" to ${monitor.user.email}`);
+
+    if (channel === "SLACK" && monitor.user.slackWebhookUrl) {
+      await sendSlack({
+        webhookUrl: monitor.user.slackWebhookUrl,
+        monitorName: monitor.name,
+        monitorUrl: monitor.url,
+        isDown: false,
+      });
+      console.log(`[Alert] Recovery Slack sent for ${monitor.name}`);
+    }
   }
 
   await prisma.alert.create({
     data: {
       monitorId,
       type: "RECOVERY",
-      message: subject,
+      message: email.subject,
     },
   });
+}
+
+export async function sendTestAlert(monitorId: string, monitorName: string, monitorUrl: string) {
+  const monitor = await prisma.monitor.findUnique({
+    where: { id: monitorId },
+    select: {
+      user: { select: { email: true, slackWebhookUrl: true } },
+    },
+  });
+
+  if (!monitor) return;
+
+  const testName = `${monitorName} (Test Alert)`;
+  const email = buildDownEmail(testName, monitorUrl);
+
+  await sendEmail({ to: monitor.user.email, ...email });
+  console.log(`[Alert] Test email sent to ${monitor.user.email}`);
+
+  if (monitor.user.slackWebhookUrl) {
+    await sendSlack({
+      webhookUrl: monitor.user.slackWebhookUrl,
+      monitorName: testName,
+      monitorUrl,
+      isDown: true,
+    });
+    console.log(`[Alert] Test Slack sent for ${monitorName}`);
+  }
 }

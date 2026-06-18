@@ -10,6 +10,7 @@ export interface Monitor {
   mode: MonitorMode;
   interval: number;
   status: MonitorStatus;
+  channels: string[];
   userId: string;
   createdAt: string;
   updatedAt: string;
@@ -86,4 +87,13 @@ export interface Incident {
 
 export function getIncidents(id: string): Promise<Incident[]> {
   return client.get(`/monitors/${id}/incidents`).then((r) => r.data);
+}
+
+export function toggleChannel(
+  id: string,
+  channel: string
+): Promise<Monitor> {
+  return client
+    .put(`/monitors/${id}/channels/toggle`, { channel })
+    .then((r) => r.data);
 }

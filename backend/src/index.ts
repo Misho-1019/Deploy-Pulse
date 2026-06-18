@@ -4,6 +4,7 @@ import { env } from './config/env.js';
 import healthRoutes from './routes/health.js';
 import authRoutes from './routes/auth.js';
 import monitorRoutes from './routes/monitor.js';
+import userRoutes from './routes/user.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { startScheduler } from './scheduler.js';
 import './workers/checkWorker.js';
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use('/api', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/monitors', monitorRoutes);
+app.use('/api/user', userRoutes);
 
 app.use(errorHandler);
 

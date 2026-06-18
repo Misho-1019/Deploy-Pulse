@@ -1,6 +1,6 @@
 import { prisma } from "../lib/prisma.js";
 import type { CheckStatus } from "../generated/prisma/client.js";
-import { sendDownAlert, sendRecoveryAlert } from "./alert.js";
+import { dispatchDownAlert, dispatchRecoveryAlert } from "./alert.js";
 
 const CHECK_TIMEOUT_MS = 10_000;
 
@@ -119,13 +119,7 @@ async function handleStatusTransition(
     console.log(`[Incident] Created: monitor ${monitorId} is DOWN`);
 
     if (mode === "FULL_MONITORING") {
-      const monitor = await prisma.monitor.findUnique({
-        where: { id: monitorId },
-        select: { name: true, url: true },
-      });
-      if (monitor) {
-        await sendDownAlert(monitorId, monitor.name, monitor.url);
-      }
+      await dispatchDownAlert(monitorId);
     }
   }
 
@@ -139,13 +133,7 @@ async function handleStatusTransition(
     console.log(`[Incident] Resolved: monitor ${monitorId} is UP`);
 
     if (mode === "FULL_MONITORING") {
-      const monitor = await prisma.monitor.findUnique({
-        where: { id: monitorId },
-        select: { name: true },
-      });
-      if (monitor) {
-        await sendRecoveryAlert(monitorId, monitor.name);
-      }
+      await dispatchRecoveryAlert(monitorId);
     }
   }
 }
