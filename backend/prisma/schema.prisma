@@ -28,19 +28,28 @@ enum NotificationChannel {
   SLACK
 }
 
+enum Plan {
+  FREE
+  STARTER
+  PRO
+}
+
 enum AlertType {
   DOWN
   RECOVERY
 }
 
 model User {
-  id               String    @id @default(uuid())
-  email            String    @unique
-  password         String
-  name             String?
-  slackWebhookUrl  String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id                     String    @id @default(uuid())
+  email                  String    @unique
+  password               String
+  name                   String?
+  plan                   Plan      @default(FREE)
+  stripeCustomerId       String?
+  stripeSubscriptionId   String?
+  slackWebhookUrl        String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 
   monitors Monitor[]
 }

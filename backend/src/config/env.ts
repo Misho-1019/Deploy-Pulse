@@ -16,4 +16,9 @@ export const env = {
     PASS: process.env.SMTP_PASS || '',
   },
   ALERT_FROM_EMAIL: process.env.ALERT_FROM_EMAIL || '',
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || '',
+  STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || '',
+  STRIPE_PRICE_STARTER_ID: process.env.STRIPE_PRICE_STARTER_ID || '',
+  STRIPE_PRICE_PRO_ID: process.env.STRIPE_PRICE_PRO_ID || '',
+  FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5173',
 };

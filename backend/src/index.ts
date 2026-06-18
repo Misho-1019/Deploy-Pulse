@@ -5,11 +5,16 @@ import healthRoutes from './routes/health.js';
 import authRoutes from './routes/auth.js';
 import monitorRoutes from './routes/monitor.js';
 import userRoutes from './routes/user.js';
+import billingRoutes from './routes/billing.js';
+import webhookRoutes from './routes/webhooks.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { startScheduler } from './scheduler.js';
 import './workers/checkWorker.js';
 
 const app = express();
+
+// Webhook route needs raw body — mount before JSON parser
+app.use('/api/webhooks', express.raw({ type: 'application/json' }), webhookRoutes);
 
 app.use(cors());
 app.use(express.json());
@@ -18,6 +23,7 @@ app.use('/api', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/monitors', monitorRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/billing', billingRoutes);
 
 app.use(errorHandler);
 

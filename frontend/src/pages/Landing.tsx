@@ -71,17 +71,17 @@ const PLANS = [
     price: '$5',
     period: '/mo',
     features: ['25 monitors', '5-minute checks', 'Email alerts', '30-day history', 'Full Monitoring'],
-    cta: 'Coming Soon',
-    href: '#',
+    cta: 'Upgrade',
+    href: '/app/settings?plan=starter',
     featured: true,
   },
   {
     name: 'Pro',
     price: '$15',
     period: '/mo',
-    features: ['100 monitors', '1-minute checks', 'Discord + Slack alerts', 'SSL monitoring', 'Status pages'],
-    cta: 'Coming Soon',
-    href: '#',
+    features: ['100 monitors', '1-minute checks', 'Slack + Email alerts', 'Status pages', 'SSL monitoring'],
+    cta: 'Upgrade',
+    href: '/app/settings?plan=pro',
   },
 ];
 
@@ -221,24 +221,31 @@ export default function Landing() {
                     </li>
                   ))}
                 </ul>
-                {plan.href.startsWith('/') ? (
+                {plan.cta === 'Start Free' && !token ? (
                   <Link
-                    to={plan.href}
+                    to="/register"
+                    className="block w-full text-center py-2 rounded-md text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    {plan.cta}
+                  </Link>
+                ) : plan.cta === 'Start Free' && token ? (
+                  <Link
+                    to="/app"
+                    className="block w-full text-center py-2 rounded-md text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Dashboard
+                  </Link>
+                ) : (
+                  <Link
+                    to={token ? plan.href : '/register'}
                     className={`block w-full text-center py-2 rounded-md text-sm font-medium transition-colors ${
                       plan.featured
                         ? 'bg-blue-600 text-white hover:bg-blue-700'
                         : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
                     }`}
                   >
-                    {plan.cta}
+                    {token ? plan.cta : 'Get Started'}
                   </Link>
-                ) : (
-                  <button
-                    disabled
-                    className="block w-full text-center py-2 rounded-md text-sm font-medium border border-gray-200 text-gray-400 cursor-not-allowed"
-                  >
-                    {plan.cta}
-                  </button>
                 )}
               </div>
             ))}

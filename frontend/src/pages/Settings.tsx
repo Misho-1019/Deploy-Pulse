@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import * as userApi from '../api/user';
+import * as billingApi from '../api/billing';
 
 export default function Settings() {
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [slackUrl, setSlackUrl] = useState('');
   const [slackConfigured, setSlackConfigured] = useState(false);
   const [monitorCount, setMonitorCount] = useState(0);
+  const [plan, setPlan] = useState('');
   const [loading, setLoading] = useState(true);
   const [testStatus, setTestStatus] = useState('');
   const [sending, setSending] = useState(false);
@@ -24,6 +27,11 @@ export default function Settings() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
+
+    billingApi
+      .getBillingStatus()
+      .then((s) => setPlan(s.plan))
+      .catch(() => {});
   }, []);
 
   async function handleTestAlert() {
@@ -185,6 +193,90 @@ export default function Settings() {
           {testStatus && (
             <p className="mt-3 text-sm text-green-600">{testStatus}</p>
           )}
+        </div>
+
+        {/* Billing */}
+        <div className="bg-white rounded-lg border border-gray-200 p-5">
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="font-semibold text-gray-900">Plan</h3>
+            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+              plan === 'FREE'
+                ? 'bg-gray-100 text-gray-600'
+                : plan === 'STARTER'
+                  ? 'bg-purple-100 text-purple-800'
+                  : 'bg-blue-100 text-blue-800'
+            }`}>
+              {plan || 'FREE'}
+            </span>
+          </div>
+          <p className="text-sm text-gray-500 mb-4">
+            {plan === 'FREE'
+              ? 'You are on the Free plan. Upgrade for more monitors, faster checks, and longer history.'
+              : `You are on the ${plan?.charAt(0).toUpperCase() + plan?.slice(1).toLowerCase()} plan.`}
+          </p>
+
+          {searchParams.get('checkout') === 'success' && (
+            <div className="mb-3 bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded text-sm">
+              Payment successful! Your plan has been upgraded.
+            </div>
+          )}
+          {searchParams.get('checkout') === 'cancelled' && (
+            <div className="mb-3 bg-yellow-50 border border-yellow-200 text-yellow-700 px-3 py-2 rounded text-sm">
+              Checkout cancelled. No changes were made.
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-2">
+            {plan === 'FREE' && (
+              <>
+                <button
+                  onClick={async () => {
+                    try {
+                      const { url } = await billingApi.createCheckout(
+                        'price_1Tjj5ePW9LwsuQfOH66CdRQG'
+                      );
+                      window.location.href = url;
+                    } catch (err: any) {
+                      alert(err?.response?.data?.error || 'Failed');
+                    }
+                  }}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                >
+                  Upgrade to Starter ($5/mo)
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      const { url } = await billingApi.createCheckout(
+                        'price_1Tjj7SPW9LwsuQfOPDli7znA'
+                      );
+                      window.location.href = url;
+                    } catch (err: any) {
+                      alert(err?.response?.data?.error || 'Failed');
+                    }
+                  }}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors"
+                >
+                  Upgrade to Pro ($15/mo)
+                </button>
+              </>
+            )}
+            {plan !== 'FREE' && (
+              <button
+                onClick={async () => {
+                  try {
+                    const { url } = await billingApi.getPortal();
+                    window.location.href = url;
+                  } catch (err: any) {
+                    alert(err?.response?.data?.error || 'Failed');
+                  }
+                }}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors"
+              >
+                Manage Subscription
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Per-Monitor Control */}

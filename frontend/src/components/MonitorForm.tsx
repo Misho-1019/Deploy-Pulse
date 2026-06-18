@@ -4,11 +4,12 @@ import type { Monitor, MonitorMode } from '../api/monitors';
 interface Props {
   open: boolean;
   editing: Monitor | null;
+  minInterval?: number;
   onClose: () => void;
   onSubmit: (data: { name: string; url: string; mode: MonitorMode; interval: number }) => Promise<void>;
 }
 
-const INTERVALS = [
+const ALL_INTERVALS = [
   { value: 60, label: '1 minute' },
   { value: 120, label: '2 minutes' },
   { value: 300, label: '5 minutes' },
@@ -18,7 +19,7 @@ const INTERVALS = [
   { value: 3600, label: '1 hour' },
 ];
 
-export default function MonitorForm({ open, editing, onClose, onSubmit }: Props) {
+export default function MonitorForm({ open, editing, minInterval = 300, onClose, onSubmit }: Props) {
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   const [mode, setMode] = useState<MonitorMode>('KEEP_ALIVE');
@@ -42,6 +43,8 @@ export default function MonitorForm({ open, editing, onClose, onSubmit }: Props)
   }, [editing, open]);
 
   if (!open) return null;
+
+  const intervals = ALL_INTERVALS.filter((i) => i.value >= minInterval);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -143,7 +146,7 @@ export default function MonitorForm({ open, editing, onClose, onSubmit }: Props)
               onChange={(e) => setInterval(Number(e.target.value))}
               className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             >
-              {INTERVALS.map((i) => (
+              {intervals.map((i) => (
                 <option key={i.value} value={i.value}>
                   {i.label}
                 </option>

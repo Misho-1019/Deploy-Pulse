@@ -12,6 +12,11 @@ import {
   toggleChannel,
   AppError,
 } from "../services/monitor.js";
+import { prisma } from "../lib/prisma.js";
+import {
+  canCreateMonitor,
+  validateIntervalForPlan,
+} from "../middleware/planLimits.js";
 
 const router = Router();
 
@@ -26,11 +31,38 @@ router.post("/", async (req: AuthRequest, res, next) => {
       return;
     }
 
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { plan: true },
+    });
+
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    const currentCount = await prisma.monitor.count({
+      where: { userId: req.userId },
+    });
+
+    const countCheck = canCreateMonitor(user.plan, currentCount);
+    if (!countCheck.allowed) {
+      res.status(403).json({ error: countCheck.message });
+      return;
+    }
+
+    const checkInterval = interval || 300;
+    const intervalCheck = validateIntervalForPlan(user.plan, checkInterval);
+    if (!intervalCheck.allowed) {
+      res.status(403).json({ error: intervalCheck.message });
+      return;
+    }
+
     const monitor = await createMonitor(req.userId!, {
       name,
       url,
       mode,
-      interval,
+      interval: checkInterval,
     });
 
     res.status(201).json(monitor);
@@ -69,6 +101,20 @@ router.get("/:id", async (req: AuthRequest, res, next) => {
 router.put("/:id", async (req: AuthRequest, res, next) => {
   try {
     const { name, url, mode, interval } = req.body;
+
+    if (interval !== undefined) {
+      const user = await prisma.user.findUnique({
+        where: { id: req.userId },
+        select: { plan: true },
+      });
+      if (user) {
+        const intervalCheck = validateIntervalForPlan(user.plan, interval);
+        if (!intervalCheck.allowed) {
+          res.status(403).json({ error: intervalCheck.message });
+          return;
+        }
+      }
+    }
 
     const id = String(req.params.id);
     const monitor = await updateMonitor(id, req.userId!, {

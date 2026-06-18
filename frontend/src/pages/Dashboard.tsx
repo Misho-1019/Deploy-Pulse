@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import * as monitorsApi from '../api/monitors';
+import * as billingApi from '../api/billing';
 import type { Monitor, MonitorMode } from '../api/monitors';
 import MonitorCard from '../components/MonitorCard';
 import MonitorForm from '../components/MonitorForm';
@@ -12,6 +14,7 @@ export default function Dashboard() {
   const [error, setError] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Monitor | null>(null);
+  const [billingStatus, setBillingStatus] = useState<{ plan: string; monitorCount: number; maxMonitors: number; minInterval: number } | null>(null);
 
   const fetchMonitors = useCallback(async () => {
     try {
@@ -27,6 +30,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchMonitors();
+    billingApi
+      .getBillingStatus()
+      .then(setBillingStatus)
+      .catch(() => {});
   }, [fetchMonitors]);
 
   async function handleCreate(data: {
@@ -85,6 +92,30 @@ export default function Dashboard() {
             {monitors.length === 0
               ? "You don't have any monitors yet."
               : `${monitors.length} monitor${monitors.length > 1 ? 's' : ''} running`}
+            {billingStatus && (
+              <span className="ml-2">
+                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                  billingStatus.plan === 'FREE'
+                    ? 'bg-gray-100 text-gray-600'
+                    : billingStatus.plan === 'STARTER'
+                      ? 'bg-purple-100 text-purple-800'
+                      : 'bg-blue-100 text-blue-800'
+                }`}>
+                  {billingStatus.plan}
+                </span>
+                <span className="text-gray-400 ml-1">
+                  ({billingStatus.monitorCount}/{billingStatus.maxMonitors} monitors)
+                </span>
+                {billingStatus.plan === 'FREE' && monitors.length > 0 && (
+                  <Link
+                    to="/app/settings"
+                    className="ml-2 text-blue-600 hover:text-blue-500 text-xs font-medium"
+                  >
+                    Upgrade
+                  </Link>
+                )}
+              </span>
+            )}
           </p>
         </div>
         <button
@@ -144,6 +175,7 @@ export default function Dashboard() {
       <MonitorForm
         open={formOpen}
         editing={editing}
+        minInterval={billingStatus?.minInterval}
         onClose={closeForm}
         onSubmit={editing ? handleUpdate : handleCreate}
       />
