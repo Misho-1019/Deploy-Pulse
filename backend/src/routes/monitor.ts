@@ -31,6 +31,16 @@ router.post("/", async (req: AuthRequest, res, next) => {
       return;
     }
 
+    if (typeof name !== "string" || name.length > 255) {
+      res.status(400).json({ error: "Name must be 255 characters or less" });
+      return;
+    }
+
+    if (typeof url !== "string" || url.length > 2048) {
+      res.status(400).json({ error: "URL must be 2048 characters or less" });
+      return;
+    }
+
     const user = await prisma.user.findUnique({
       where: { id: req.userId },
       select: { plan: true },

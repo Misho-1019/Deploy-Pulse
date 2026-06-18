@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import { env } from './config/env.js';
 import healthRoutes from './routes/health.js';
 import authRoutes from './routes/auth.js';
@@ -16,8 +17,20 @@ const app = express();
 // Webhook route needs raw body — mount before JSON parser
 app.use('/api/webhooks', express.raw({ type: 'application/json' }), webhookRoutes);
 
-app.use(cors());
-app.use(express.json());
+app.use(cors({ origin: env.FRONTEND_URL }));
+app.use(express.json({ limit: "1mb" }));
+
+app.set("trust proxy", 1);
+app.disable("x-powered-by");
+
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 500,
+    standardHeaders: true,
+    legacyHeaders: false,
+  })
+);
 
 app.use('/api', healthRoutes);
 app.use('/api/auth', authRoutes);

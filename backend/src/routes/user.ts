@@ -39,8 +39,8 @@ router.put("/slack-config", async (req: AuthRequest, res, next) => {
   try {
     const { webhookUrl } = req.body;
 
-    if (!webhookUrl || typeof webhookUrl !== "string") {
-      res.status(400).json({ error: "webhookUrl is required" });
+    if (!webhookUrl || typeof webhookUrl !== "string" || webhookUrl.length > 500) {
+      res.status(400).json({ error: "webhookUrl is required and must be 500 characters or less" });
       return;
     }
 

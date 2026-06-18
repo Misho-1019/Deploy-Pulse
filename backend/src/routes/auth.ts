@@ -1,9 +1,18 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import { register, login, AppError } from "../services/auth.js";
 
 const router = Router();
 
-router.post("/register", async (req, res, next) => {
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many attempts. Please try again later." },
+});
+
+router.post("/register", authLimiter, async (req, res, next) => {
   try {
     const { email, password, name } = req.body;
 
@@ -12,8 +21,18 @@ router.post("/register", async (req, res, next) => {
       return;
     }
 
-    if (password.length < 6) {
-      res.status(400).json({ error: "Password must be at least 6 characters" });
+    if (typeof email !== "string" || email.length > 255) {
+      res.status(400).json({ error: "Invalid email" });
+      return;
+    }
+
+    if (typeof password !== "string" || password.length < 6 || password.length > 128) {
+      res.status(400).json({ error: "Password must be 6-128 characters" });
+      return;
+    }
+
+    if (name && (typeof name !== "string" || name.length > 100)) {
+      res.status(400).json({ error: "Name must be 100 characters or less" });
       return;
     }
 
@@ -28,12 +47,17 @@ router.post("/register", async (req, res, next) => {
   }
 });
 
-router.post("/login", async (req, res, next) => {
+router.post("/login", authLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
       res.status(400).json({ error: "Email and password are required" });
+      return;
+    }
+
+    if (typeof email !== "string" || typeof password !== "string") {
+      res.status(400).json({ error: "Invalid credentials" });
       return;
     }
 
