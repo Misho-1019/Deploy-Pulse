@@ -1,23 +1,36 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Register() {
   const { register, loading, error, clearError } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [localError, setLocalError] = useState('');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setLocalError('');
+
+    if (password !== confirmPassword) {
+      setLocalError('Passwords do not match');
+      return;
+    }
+
     try {
       await register(email, password, name || undefined);
-      navigate('/app');
+      const redirect = searchParams.get('redirect') || '/app';
+      navigate(redirect);
     } catch {
       // error is set in context
     }
   }
+
+  const displayError = localError || error;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -31,9 +44,9 @@ export default function Register() {
           onSubmit={handleSubmit}
           className="bg-white shadow rounded-lg px-6 py-8 space-y-5"
         >
-          {error && (
+          {displayError && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
-              {error}
+              {displayError}
             </div>
           )}
 
@@ -45,7 +58,7 @@ export default function Register() {
               id="name"
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => { setName(e.target.value); clearError(); setLocalError(''); }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
               placeholder="Your name"
             />
@@ -76,9 +89,25 @@ export default function Register() {
               required
               minLength={6}
               value={password}
-              onChange={(e) => { setPassword(e.target.value); clearError(); }}
+              onChange={(e) => { setPassword(e.target.value); clearError(); setLocalError(''); }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
               placeholder="At least 6 characters"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+              Confirm Password
+            </label>
+            <input
+              id="confirmPassword"
+              type="password"
+              required
+              minLength={6}
+              value={confirmPassword}
+              onChange={(e) => { setConfirmPassword(e.target.value); setLocalError(''); }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+              placeholder="Repeat your password"
             />
           </div>
 

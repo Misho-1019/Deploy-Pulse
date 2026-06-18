@@ -15,6 +15,10 @@ export default function Settings() {
   const [sending, setSending] = useState(false);
   const [slackSaving, setSlackSaving] = useState(false);
   const [slackStatus, setSlackStatus] = useState('');
+  const [fetchError, setFetchError] = useState(false);
+  const [billingUpgradeStatus, setBillingUpgradeStatus] = useState('');
+  const [billingUpgradeError, setBillingUpgradeError] = useState('');
+  const [billingManageError, setBillingManageError] = useState('');
 
   useEffect(() => {
     userApi
@@ -25,7 +29,7 @@ export default function Settings() {
         setSlackConfigured(s.slackConfigured);
         setMonitorCount(s.monitorCount);
       })
-      .catch(() => {})
+      .catch(() => setFetchError(true))
       .finally(() => setLoading(false));
 
     billingApi
@@ -103,10 +107,14 @@ export default function Settings() {
         {/* Account */}
         <div className="bg-white rounded-lg border border-gray-200 p-5">
           <h3 className="font-semibold text-gray-900 mb-2">Account</h3>
-          <p className="text-sm text-gray-500">
-            Alert emails are sent to{' '}
-            <span className="font-medium text-gray-700">{email}</span>
-          </p>
+          {fetchError ? (
+            <p className="text-sm text-red-600">Failed to load account info.</p>
+          ) : (
+            <p className="text-sm text-gray-500">
+              Alert emails are sent to{' '}
+              <span className="font-medium text-gray-700">{email}</span>
+            </p>
+          )}
           <p className="text-xs text-gray-400 mt-1">
             {monitorCount} monitor{monitorCount !== 1 ? 's' : ''} configured
           </p>
@@ -216,13 +224,51 @@ export default function Settings() {
           </p>
 
           {searchParams.get('checkout') === 'success' && (
-            <div className="mb-3 bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded text-sm">
-              Payment successful! Your plan has been upgraded.
+            <div className="mb-3 bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded text-sm flex items-center justify-between">
+              <span>Payment successful! Your plan has been upgraded.</span>
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.delete('checkout');
+                  window.history.replaceState({}, '', url);
+                  window.location.reload();
+                }}
+                className="text-gray-400 hover:text-gray-600 ml-2"
+              >
+                &times;
+              </button>
             </div>
           )}
           {searchParams.get('checkout') === 'cancelled' && (
-            <div className="mb-3 bg-yellow-50 border border-yellow-200 text-yellow-700 px-3 py-2 rounded text-sm">
-              Checkout cancelled. No changes were made.
+            <div className="mb-3 bg-yellow-50 border border-yellow-200 text-yellow-700 px-3 py-2 rounded text-sm flex items-center justify-between">
+              <span>Checkout cancelled. No changes were made.</span>
+              <button
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.delete('checkout');
+                  window.history.replaceState({}, '', url);
+                  window.location.reload();
+                }}
+                className="text-gray-400 hover:text-gray-600 ml-2"
+              >
+                &times;
+              </button>
+            </div>
+          )}
+
+          {billingUpgradeError && (
+            <div className="mb-3 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">
+              {billingUpgradeError}
+            </div>
+          )}
+          {billingUpgradeStatus && (
+            <div className="mb-3 bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded text-sm">
+              {billingUpgradeStatus}
+            </div>
+          )}
+          {billingManageError && (
+            <div className="mb-3 bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">
+              {billingManageError}
             </div>
           )}
 
@@ -231,13 +277,15 @@ export default function Settings() {
               <>
                 <button
                   onClick={async () => {
+                    setBillingUpgradeError('');
+                    setBillingUpgradeStatus('');
                     try {
                       const { url } = await billingApi.createCheckout(
                         'price_1Tjj5ePW9LwsuQfOH66CdRQG'
                       );
                       window.location.href = url;
                     } catch (err: any) {
-                      alert(err?.response?.data?.error || 'Failed');
+                      setBillingUpgradeError(err?.response?.data?.error || 'Failed to start checkout');
                     }
                   }}
                   className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
@@ -246,13 +294,15 @@ export default function Settings() {
                 </button>
                 <button
                   onClick={async () => {
+                    setBillingUpgradeError('');
+                    setBillingUpgradeStatus('');
                     try {
                       const { url } = await billingApi.createCheckout(
                         'price_1Tjj7SPW9LwsuQfOPDli7znA'
                       );
                       window.location.href = url;
                     } catch (err: any) {
-                      alert(err?.response?.data?.error || 'Failed');
+                      setBillingUpgradeError(err?.response?.data?.error || 'Failed to start checkout');
                     }
                   }}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors"
@@ -264,11 +314,12 @@ export default function Settings() {
             {plan !== 'FREE' && (
               <button
                 onClick={async () => {
+                  setBillingManageError('');
                   try {
                     const { url } = await billingApi.getPortal();
                     window.location.href = url;
                   } catch (err: any) {
-                    alert(err?.response?.data?.error || 'Failed');
+                    setBillingManageError(err?.response?.data?.error || 'Failed to open portal');
                   }
                 }}
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors"

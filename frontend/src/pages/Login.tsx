@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Login() {
   const { login, loading, error, clearError } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -12,7 +13,8 @@ export default function Login() {
     e.preventDefault();
     try {
       await login(email, password);
-      navigate('/app');
+      const redirect = searchParams.get('redirect') || '/app';
+      navigate(redirect);
     } catch {
       // error is set in context
     }
@@ -59,6 +61,7 @@ export default function Login() {
               id="password"
               type="password"
               required
+              minLength={6}
               value={password}
               onChange={(e) => { setPassword(e.target.value); clearError(); }}
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"

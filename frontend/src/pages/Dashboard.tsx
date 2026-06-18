@@ -12,9 +12,11 @@ export default function Dashboard() {
   const [monitors, setMonitors] = useState<Monitor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [actionError, setActionError] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Monitor | null>(null);
   const [billingStatus, setBillingStatus] = useState<{ plan: string; monitorCount: number; maxMonitors: number; minInterval: number } | null>(null);
+  const [billingError, setBillingError] = useState(false);
 
   const fetchMonitors = useCallback(async () => {
     try {
@@ -33,7 +35,7 @@ export default function Dashboard() {
     billingApi
       .getBillingStatus()
       .then(setBillingStatus)
-      .catch(() => {});
+      .catch(() => setBillingError(true));
   }, [fetchMonitors]);
 
   async function handleCreate(data: {
@@ -42,8 +44,13 @@ export default function Dashboard() {
     mode: MonitorMode;
     interval: number;
   }) {
-    await monitorsApi.createMonitor(data);
-    await fetchMonitors();
+    setActionError('');
+    try {
+      await monitorsApi.createMonitor(data);
+      await fetchMonitors();
+    } catch (err: any) {
+      throw err; // let MonitorForm handle display
+    }
   }
 
   async function handleUpdate(data: {
@@ -53,15 +60,25 @@ export default function Dashboard() {
     interval: number;
   }) {
     if (!editing) return;
-    await monitorsApi.updateMonitor(editing.id, data);
-    setEditing(null);
-    await fetchMonitors();
+    setActionError('');
+    try {
+      await monitorsApi.updateMonitor(editing.id, data);
+      setEditing(null);
+      await fetchMonitors();
+    } catch (err: any) {
+      throw err;
+    }
   }
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this monitor?')) return;
-    await monitorsApi.deleteMonitor(id);
-    await fetchMonitors();
+    setActionError('');
+    try {
+      await monitorsApi.deleteMonitor(id);
+      await fetchMonitors();
+    } catch {
+      setActionError('Failed to delete monitor. Please try again.');
+    }
   }
 
   function openEdit(monitor: Monitor) {
@@ -72,13 +89,19 @@ export default function Dashboard() {
   function closeForm() {
     setFormOpen(false);
     setEditing(null);
+    setActionError('');
   }
 
   async function handleToggleChannel(id: string, channel: string) {
-    const updated = await monitorsApi.toggleChannel(id, channel);
-    setMonitors((prev) =>
-      prev.map((m) => (m.id === id ? updated : m))
-    );
+    setActionError('');
+    try {
+      const updated = await monitorsApi.toggleChannel(id, channel);
+      setMonitors((prev) =>
+        prev.map((m) => (m.id === id ? updated : m))
+      );
+    } catch {
+      setActionError('Failed to toggle channel. Please try again.');
+    }
   }
 
   return (
@@ -116,6 +139,11 @@ export default function Dashboard() {
                 )}
               </span>
             )}
+            {billingError && (
+              <span className="ml-2 text-xs text-gray-400">
+                (plan info unavailable)
+              </span>
+            )}
           </p>
         </div>
         <button
@@ -129,6 +157,12 @@ export default function Dashboard() {
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm mb-4">
           {error}
+        </div>
+      )}
+
+      {actionError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm mb-4">
+          {actionError}
         </div>
       )}
 
