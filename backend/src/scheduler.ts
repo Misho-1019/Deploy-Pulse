@@ -2,25 +2,43 @@ import { prisma } from "./lib/prisma.js";
 import { checkQueue } from "./queues/checkQueue.js";
 
 const TICK_INTERVAL_MS = 15_000;
+let running = false;
 
 export function startScheduler() {
   console.log("[Scheduler] Starting check scheduler (tick every 15s)");
 
   async function tick() {
+    if (running) return; // prevent overlapping ticks
+    running = true;
+
     try {
       const monitors = await prisma.monitor.findMany();
 
-      for (const monitor of monitors) {
-        const latestCheck = await prisma.check.findFirst({
-          where: { monitorId: monitor.id },
-          orderBy: { checkedAt: "desc" },
-          select: { checkedAt: true },
-        });
+      if (monitors.length === 0) {
+        running = false;
+        return;
+      }
 
+      // Batch: get latest check for all monitors in a single query
+      const latestChecks = await prisma.check.groupBy({
+        by: ["monitorId"],
+        where: {
+          monitorId: { in: monitors.map((m) => m.id) },
+        },
+        _max: { checkedAt: true },
+      });
+
+      const latestCheckMap = new Map(
+        latestChecks.map((c) => [c.monitorId, c._max.checkedAt])
+      );
+
+      const now = Date.now();
+
+      for (const monitor of monitors) {
+        const lastChecked = latestCheckMap.get(monitor.id);
         const isDue =
-          !latestCheck ||
-          Date.now() - latestCheck.checkedAt.getTime() >=
-            monitor.interval * 1000;
+          !lastChecked ||
+          now - lastChecked.getTime() >= monitor.interval * 1000;
 
         if (isDue) {
           await checkQueue.add(
@@ -41,9 +59,17 @@ export function startScheduler() {
       }
     } catch (err) {
       console.error("[Scheduler] Error:", err);
+    } finally {
+      running = false;
     }
   }
 
-  tick();
-  setInterval(tick, TICK_INTERVAL_MS);
+  // Run immediately, then schedule next after current completes
+  function scheduleNext() {
+    tick().finally(() => {
+      setTimeout(scheduleNext, TICK_INTERVAL_MS);
+    });
+  }
+
+  scheduleNext();
 }

@@ -45,8 +45,8 @@ model User {
   password               String
   name                   String?
   plan                   Plan      @default(FREE)
-  stripeCustomerId       String?
-  stripeSubscriptionId   String?
+  stripeCustomerId       String?   @unique
+  stripeSubscriptionId   String?   @unique
   slackWebhookUrl        String?
   createdAt              DateTime  @default(now())
   updatedAt              DateTime  @updatedAt
@@ -70,6 +70,8 @@ model Monitor {
   checks    Check[]
   alerts    Alert[]
   incidents Incident[]
+
+  @@index([userId])
 }
 
 model Check {
@@ -82,6 +84,8 @@ model Check {
   monitorId    String
 
   monitor      Monitor     @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  @@index([monitorId, checkedAt])
 }
 
 model Alert {
@@ -93,6 +97,8 @@ model Alert {
   monitorId String
 
   monitor   Monitor   @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  @@index([monitorId])
 }
 
 model Incident {
@@ -102,4 +108,6 @@ model Incident {
   monitorId  String
 
   monitor    Monitor   @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  @@index([monitorId, resolvedAt])
 }

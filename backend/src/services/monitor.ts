@@ -204,13 +204,13 @@ export async function toggleChannel(
   }
 
   const channels = monitor.channels as string[];
-  const updated = channels.includes(channel)
-    ? channels.filter((c) => c !== channel)
-    : [...channels, channel];
+  const hasChannel = channels.includes(channel);
 
   return prisma.monitor.update({
     where: { id: monitorId },
-    data: { channels: updated as any },
+    data: hasChannel
+      ? ({ channels: { set: channels.filter((c) => c !== channel) } } as any)
+      : ({ channels: { push: channel } } as any),
   });
 }
 

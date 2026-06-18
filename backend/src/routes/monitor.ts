@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import {
-  createMonitor,
   getMonitors,
   getMonitor,
   updateMonitor,
@@ -51,16 +50,6 @@ router.post("/", async (req: AuthRequest, res, next) => {
       return;
     }
 
-    const currentCount = await prisma.monitor.count({
-      where: { userId: req.userId },
-    });
-
-    const countCheck = canCreateMonitor(user.plan, currentCount);
-    if (!countCheck.allowed) {
-      res.status(403).json({ error: countCheck.message });
-      return;
-    }
-
     const checkInterval = interval || 300;
     const intervalCheck = validateIntervalForPlan(user.plan, checkInterval);
     if (!intervalCheck.allowed) {
@@ -68,11 +57,26 @@ router.post("/", async (req: AuthRequest, res, next) => {
       return;
     }
 
-    const monitor = await createMonitor(req.userId!, {
-      name,
-      url,
-      mode,
-      interval: checkInterval,
+    // Atomic: count + create in transaction to prevent race condition
+    const monitor = await prisma.$transaction(async (tx) => {
+      const currentCount = await tx.monitor.count({
+        where: { userId: req.userId! },
+      });
+
+      const countCheck = canCreateMonitor(user.plan, currentCount);
+      if (!countCheck.allowed) {
+        throw new AppError(countCheck.message!, 403);
+      }
+
+      return tx.monitor.create({
+        data: {
+          name: name.trim(),
+          url: url.trim(),
+          mode,
+          interval: checkInterval,
+          userId: req.userId!,
+        },
+      });
     });
 
     res.status(201).json(monitor);

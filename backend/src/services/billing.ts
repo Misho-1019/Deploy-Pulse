@@ -128,7 +128,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   if (subscription.status === "active" || subscription.status === "trialing") {
-    const user = await prisma.user.findFirst({
+    const user = await prisma.user.findUnique({
       where: { stripeSubscriptionId: subscription.id },
       select: { id: true },
     });
