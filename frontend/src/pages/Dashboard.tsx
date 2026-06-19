@@ -15,6 +15,7 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Monitor | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const {
     data: monitors = [],
@@ -23,9 +24,10 @@ export default function Dashboard() {
   } = useQuery({
     queryKey: ['monitors'],
     queryFn: monitorsApi.getMonitors,
+    refetchInterval: 15_000,
   });
 
-  const { data: billingStatus } = useQuery({
+  const { data: billingStatus, isError: billingError } = useQuery({
     queryKey: ['billing'],
     queryFn: () => billingApi.getBillingStatus(),
     staleTime: 60_000,
@@ -38,9 +40,6 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ['billing'] });
       toast.success('Monitor created');
     },
-    onError: (err: any) => {
-      toast.error(err?.response?.data?.error || 'Failed to create monitor');
-    },
   });
 
   const updateMutation = useMutation({
@@ -50,9 +49,6 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ['monitors'] });
       setEditing(null);
       toast.success('Monitor updated');
-    },
-    onError: (err: any) => {
-      toast.error(err?.response?.data?.error || 'Failed to update monitor');
     },
   });
 
@@ -71,6 +67,7 @@ export default function Dashboard() {
       monitorsApi.toggleChannel(id, channel),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['monitors'] });
+      toast.success('Channel updated');
     },
     onError: () => toast.error('Failed to toggle channel'),
   });
@@ -86,7 +83,10 @@ export default function Dashboard() {
 
   function handleDelete(id: string) {
     if (!confirm('Delete this monitor?')) return;
-    deleteMutation.mutate(id);
+    setDeletingId(id);
+    deleteMutation.mutate(id, {
+      onSettled: () => setDeletingId(null),
+    });
   }
 
   function handleToggleChannel(id: string, channel: string) {
@@ -107,7 +107,10 @@ export default function Dashboard() {
             {monitors.length === 0
               ? "You don't have any monitors yet."
               : `${monitors.length} monitor${monitors.length > 1 ? 's' : ''} running`}
-            {billingStatus && (
+            {billingError && (
+              <span className="ml-2 text-xs text-muted-foreground italic">(plan info unavailable)</span>
+            )}
+            {!billingError && billingStatus && (
               <span className="ml-2">
                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                   billingStatus.plan === 'FREE'
@@ -178,9 +181,10 @@ export default function Dashboard() {
             <MonitorCard
               key={m.id}
               monitor={m}
-               onEdit={(monitor) => { setEditing(monitor); setFormOpen(true); }}
+              onEdit={(monitor) => { setEditing(monitor); setFormOpen(true); }}
               onDelete={handleDelete}
               onToggleChannel={handleToggleChannel}
+              isDeleting={deletingId === m.id}
             />
           ))}
         </div>

@@ -9,6 +9,7 @@ interface Props {
   onEdit: (monitor: Monitor) => void;
   onDelete: (id: string) => void;
   onToggleChannel: (id: string, channel: string) => void;
+  isDeleting?: boolean;
 }
 
 const INTERVAL_LABELS: Record<number, string> = {
@@ -26,6 +27,7 @@ export default function MonitorCard({
   onEdit,
   onDelete,
   onToggleChannel,
+  isDeleting,
 }: Props) {
   const isKeepAlive = monitor.mode === 'KEEP_ALIVE';
   const hasEmail = monitor.channels.includes('EMAIL');
@@ -67,8 +69,8 @@ export default function MonitorCard({
             <Button variant="ghost" size="sm" onClick={() => onEdit(monitor)}>
               Edit
             </Button>
-            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => onDelete(monitor.id)}>
-              Delete
+            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" disabled={isDeleting} onClick={() => onDelete(monitor.id)}>
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </Button>
           </div>
         </div>
