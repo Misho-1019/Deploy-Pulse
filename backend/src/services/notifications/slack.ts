@@ -6,12 +6,21 @@ interface SlackPayload {
 }
 
 export async function sendSlack(payload: SlackPayload) {
+  const safeName = payload.monitorName
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  const safeUrl = payload.monitorUrl
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
   const blocks = [
     {
       type: "header",
       text: {
         type: "plain_text" as const,
-        text: payload.isDown ? "🔴 Monitor Down" : "✅ Service Recovered",
+        text: payload.isDown ? "\u{1F534} Monitor Down" : "\u2705 Service Recovered",
       },
     },
     {
@@ -19,11 +28,11 @@ export async function sendSlack(payload: SlackPayload) {
       fields: [
         {
           type: "mrkdwn" as const,
-          text: `*Service:*\n${payload.monitorName}`,
+          text: `*Service:*\n${safeName}`,
         },
         {
           type: "mrkdwn" as const,
-          text: `*URL:*\n${payload.monitorUrl}`,
+          text: `*URL:*\n${safeUrl}`,
         },
         {
           type: "mrkdwn" as const,

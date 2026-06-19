@@ -4,6 +4,7 @@ import { prisma } from "../lib/prisma.js";
 import { AppError } from "../lib/errors.js";
 import { sendEmail } from "./notifications/email.js";
 import { sendSlack } from "./notifications/slack.js";
+import { escapeHtml } from "../lib/escape.js";
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY);
 
@@ -178,7 +179,8 @@ async function notifyPlanChange(
 
   if (!user) return;
 
-  const name = user.name || user.email.split("@")[0];
+  const nameRaw = user.name || user.email.split("@")[0];
+  const name = escapeHtml(nameRaw);
 
   if (event === "upgrade") {
     const isPro = plan === "PRO";

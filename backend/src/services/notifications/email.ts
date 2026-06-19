@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { env } from "../../config/env.js";
+import { escapeHtml } from "../../lib/escape.js";
 
 let transporter: nodemailer.Transporter | null = null;
 
@@ -36,15 +37,17 @@ export async function sendEmail(payload: {
 }
 
 export function buildDownEmail(monitorName: string, monitorUrl: string) {
+  const safeName = escapeHtml(monitorName);
+  const safeUrl = escapeHtml(monitorUrl);
   const subject = `DeployPulse Alert: ${monitorName} is DOWN`;
   const html = `
     <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto;">
       <h2 style="color: #dc2626;">Monitor Down</h2>
-      <p><strong>${monitorName}</strong> is not responding.</p>
+      <p><strong>${safeName}</strong> is not responding.</p>
       <table style="border-collapse: collapse; width: 100%;">
         <tr>
           <td style="padding: 8px; border: 1px solid #e5e7eb; background: #f9fafb; font-weight: 600;">URL</td>
-          <td style="padding: 8px; border: 1px solid #e5e7eb;">${monitorUrl}</td>
+          <td style="padding: 8px; border: 1px solid #e5e7eb;">${safeUrl}</td>
         </tr>
         <tr>
           <td style="padding: 8px; border: 1px solid #e5e7eb; background: #f9fafb; font-weight: 600;">Time</td>
@@ -60,11 +63,12 @@ export function buildDownEmail(monitorName: string, monitorUrl: string) {
 }
 
 export function buildRecoveryEmail(monitorName: string) {
+  const safeName = escapeHtml(monitorName);
   const subject = `DeployPulse: ${monitorName} has recovered`;
   const html = `
     <div style="font-family: sans-serif; max-width: 500px; margin: 0 auto;">
       <h2 style="color: #16a34a;">Service Recovered</h2>
-      <p><strong>${monitorName}</strong> is back online.</p>
+      <p><strong>${safeName}</strong> is back online.</p>
       <p style="color: #6b7280; font-size: 14px;">Time: ${new Date().toLocaleString()}</p>
     </div>
   `;
