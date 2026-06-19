@@ -69,7 +69,7 @@ export default function MonitorForm({ open, editing, minInterval = 300, onClose,
   }
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v && !loading) onClose(); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{editing ? 'Edit Monitor' : 'New Monitor'}</DialogTitle>

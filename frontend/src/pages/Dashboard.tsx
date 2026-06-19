@@ -178,7 +178,7 @@ export default function Dashboard() {
             <MonitorCard
               key={m.id}
               monitor={m}
-              onEdit={setEditing}
+               onEdit={(monitor) => { setEditing(monitor); setFormOpen(true); }}
               onDelete={handleDelete}
               onToggleChannel={handleToggleChannel}
             />
