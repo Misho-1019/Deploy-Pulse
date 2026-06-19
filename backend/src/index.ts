@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { env } from './config/env.js';
 import healthRoutes from './routes/health.js';
@@ -17,6 +18,7 @@ const app = express();
 // Webhook route needs raw body — mount before JSON parser
 app.use('/api/webhooks', express.raw({ type: 'application/json' }), webhookRoutes);
 
+app.use(helmet());
 app.use(cors({ origin: env.FRONTEND_URL }));
 app.use(express.json({ limit: "1mb" }));
 

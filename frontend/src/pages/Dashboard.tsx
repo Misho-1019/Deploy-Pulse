@@ -166,6 +166,20 @@ export default function Dashboard() {
         </div>
       )}
 
+      {billingStatus && billingStatus.monitorCount > billingStatus.maxMonitors && (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded text-sm mb-4 flex items-center justify-between">
+          <span>
+            Your plan was downgraded to {billingStatus.plan}. You have {billingStatus.monitorCount} monitors but the {billingStatus.plan.toLowerCase()} plan allows {billingStatus.maxMonitors}. Existing monitors are safe, but you cannot add more until you're within the limit.
+          </span>
+          <Link
+            to="/app/settings"
+            className="ml-4 px-3 py-1 bg-yellow-200 text-yellow-800 rounded text-xs font-medium hover:bg-yellow-300 shrink-0"
+          >
+            Upgrade
+          </Link>
+        </div>
+      )}
+
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
