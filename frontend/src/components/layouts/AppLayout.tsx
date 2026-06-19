@@ -1,5 +1,6 @@
 import { Outlet, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { Button } from '../ui/button';
 
 export default function AppLayout() {
   const { user, logout } = useAuth();
@@ -19,12 +20,9 @@ export default function AppLayout() {
               Settings
             </Link>
             <span className="text-sm text-gray-600">{user?.email}</span>
-            <button
-              onClick={logout}
-              className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-            >
+            <Button variant="ghost" size="sm" onClick={logout}>
               Sign out
-            </button>
+            </Button>
           </div>
         </div>
       </header>

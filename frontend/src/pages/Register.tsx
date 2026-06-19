@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 
 export default function Register() {
   const { register, loading, error, clearError } = useAuth();
@@ -54,45 +56,33 @@ export default function Register() {
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
               Name <span className="text-gray-400">(optional)</span>
             </label>
-            <input
-              id="name"
-              type="text"
-              value={name}
+            <Input id="name" type="text" value={name}
               onChange={(e) => { setName(e.target.value); clearError(); setLocalError(''); }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-              placeholder="Your name"
-            />
+              placeholder="Your name" />
           </div>
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
               Email
             </label>
-            <input
-              id="email"
-              type="email"
-              required
-              value={email}
+            <Input id="email" type="email" required value={email}
               onChange={(e) => { setEmail(e.target.value); clearError(); }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-              placeholder="you@example.com"
-            />
+              placeholder="you@example.com" />
           </div>
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
               Password
             </label>
-            <input
-              id="password"
-              type="password"
-              required
-              minLength={6}
-              value={password}
+            <Input id="password" type="password" required minLength={6} value={password}
               onChange={(e) => { setPassword(e.target.value); clearError(); setLocalError(''); }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-              placeholder="At least 6 characters"
-            />
+              placeholder="At least 6 characters" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-muted-foreground mb-1">Confirm Password</label>
+            <Input id="confirmPassword" type="password" required minLength={6} value={confirmPassword}
+              onChange={(e) => { setConfirmPassword(e.target.value); setLocalError(''); }}
+              placeholder="Repeat your password" />
           </div>
 
           <div>
@@ -111,13 +101,9 @@ export default function Register() {
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
+          <Button type="submit" disabled={loading} className="w-full">
             {loading ? 'Creating account...' : 'Create account'}
-          </button>
+          </Button>
         </form>
 
         <p className="mt-4 text-center text-sm text-gray-500">

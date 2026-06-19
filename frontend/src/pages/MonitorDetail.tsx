@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import * as monitorsApi from '../api/monitors';
-import type { Monitor, Check } from '../api/monitors';
+import type { Check } from '../api/monitors';
 import UptimeBadges from '../components/UptimeBadges';
 import ResponseChart from '../components/ResponseChart';
 import IncidentTimeline from '../components/IncidentTimeline';
+import { Card, CardContent } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
 
-const STATUS_STYLES: Record<string, string> = {
-  UP: 'bg-green-100 text-green-800',
-  DOWN: 'bg-red-100 text-red-800',
-  PENDING: 'bg-gray-100 text-gray-600',
+const STATUS_VARIANTS: Record<string, 'default' | 'destructive' | 'secondary'> = {
+  UP: 'default',
+  DOWN: 'destructive',
+  PENDING: 'secondary',
 };
 
 const MODE_LABELS: Record<string, string> = {
@@ -20,37 +23,34 @@ const MODE_LABELS: Record<string, string> = {
 export default function MonitorDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [monitor, setMonitor] = useState<Monitor | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (!id) return;
-    setLoading(true);
-    monitorsApi
-      .getMonitor(id)
-      .then(setMonitor)
-      .catch(() => setError('Monitor not found'))
-      .finally(() => setLoading(false));
-  }, [id]);
+  const {
+    data: monitor,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['monitor', id],
+    queryFn: () => monitorsApi.getMonitor(id!),
+    enabled: !!id,
+  });
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="animate-pulse space-y-4">
-        <div className="h-6 bg-gray-200 rounded w-1/4" />
-        <div className="h-4 bg-gray-200 rounded w-1/2" />
-        <div className="h-32 bg-gray-200 rounded" />
+        <div className="h-6 bg-muted rounded w-1/4" />
+        <div className="h-4 bg-muted rounded w-1/2" />
+        <div className="h-32 bg-muted rounded" />
       </div>
     );
   }
 
-  if (error || !monitor) {
+  if (isError || !monitor) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500 mb-4">{error || 'Monitor not found'}</p>
-        <Link to="/app" className="text-blue-600 hover:text-blue-500 text-sm font-medium">
-          Back to Dashboard
-        </Link>
+        <p className="text-muted-foreground mb-4">Monitor not found</p>
+        <Button variant="link" asChild>
+          <Link to="/app">Back to Dashboard</Link>
+        </Button>
       </div>
     );
   }
@@ -60,69 +60,47 @@ export default function MonitorDetail() {
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <Link
-          to="/app"
-          className="text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          &larr;
-        </Link>
+        <Link to="/app" className="text-muted-foreground hover:text-foreground">&larr;</Link>
         <div className="flex-1 min-w-0">
-          <h2 className="text-2xl font-semibold text-gray-900 truncate">
-            {monitor.name}
-          </h2>
-          <p className="text-sm text-gray-500 truncate">{monitor.url}</p>
+          <h2 className="text-2xl font-semibold truncate">{monitor.name}</h2>
+          <p className="text-sm text-muted-foreground truncate">{monitor.url}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <p className="text-xs text-gray-400 uppercase mb-1">Status</p>
-          <span
-            className={`inline-flex items-center px-2 py-0.5 rounded text-sm font-medium ${
-              STATUS_STYLES[monitor.status] || 'bg-gray-100 text-gray-600'
-            }`}
-          >
-            <span
-              className={`inline-block w-2 h-2 rounded-full mr-1.5 ${
-                monitor.status === 'UP'
-                  ? 'bg-green-500'
-                  : monitor.status === 'DOWN'
-                    ? 'bg-red-500'
-                    : 'bg-gray-300'
-              }`}
-            />
-            {monitor.status}
-          </span>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <p className="text-xs text-gray-400 uppercase mb-1">Mode</p>
-          <p className="text-sm font-medium text-gray-900">
-            {MODE_LABELS[monitor.mode] || monitor.mode}
-          </p>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <p className="text-xs text-gray-400 uppercase mb-1">Interval</p>
-          <p className="text-sm font-medium text-gray-900">
-            {monitor.interval === 60
-              ? '1 minute'
-              : monitor.interval === 120
-                ? '2 minutes'
-                : monitor.interval === 300
-                  ? '5 minutes'
-                  : `${monitor.interval}s`}
-          </p>
-        </div>
-
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <p className="text-xs text-gray-400 uppercase mb-1">Last Check</p>
-          <p className="text-sm font-medium text-gray-900">
-            {checks.length > 0
-              ? formatTime(checks[0].checkedAt)
-              : 'No checks yet'}
-          </p>
-        </div>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground uppercase mb-1">Status</p>
+            <Badge variant={STATUS_VARIANTS[monitor.status] || 'secondary'}>
+              <span className={`inline-block w-2 h-2 rounded-full mr-1.5 ${
+                monitor.status === 'UP' ? 'bg-green-500' : monitor.status === 'DOWN' ? 'bg-red-500' : 'bg-gray-300'
+              }`}/>
+              {monitor.status}
+            </Badge>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground uppercase mb-1">Mode</p>
+            <p className="text-sm font-medium">{MODE_LABELS[monitor.mode]}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground uppercase mb-1">Interval</p>
+            <p className="text-sm font-medium">
+              {monitor.interval === 60 ? '1 min' : monitor.interval === 120 ? '2 min' : monitor.interval === 300 ? '5 min' : `${monitor.interval}s`}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <p className="text-xs text-muted-foreground uppercase mb-1">Last Check</p>
+            <p className="text-sm font-medium">
+              {checks.length > 0 ? formatTime(checks[0].checkedAt) : 'No checks yet'}
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {monitor.mode === 'FULL_MONITORING' && (
@@ -138,62 +116,40 @@ export default function MonitorDetail() {
       )}
 
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-lg font-semibold text-gray-900">Check History</h3>
-        <button
-          onClick={() => navigate("/app")}
-          className="text-sm text-blue-600 hover:text-blue-500 font-medium"
-        >
+        <h3 className="text-lg font-semibold">Check History</h3>
+        <Button variant="ghost" onClick={() => navigate("/app")}>
           Back to Dashboard
-        </button>
+        </Button>
       </div>
 
       {checks.length === 0 ? (
-        <div className="bg-white rounded-lg border border-dashed border-gray-300 text-center py-10">
-          <p className="text-gray-400">Waiting for first check...</p>
+        <div className="bg-card rounded-lg border border-dashed text-center py-10">
+          <p className="text-muted-foreground">Waiting for first check...</p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-x-auto">
+        <div className="bg-card rounded-lg border overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-muted/50 border-b">
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Status</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Code</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Response</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Time</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Error</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Code</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Response</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Time</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Error</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-border">
               {checks.map((check) => (
-                <tr key={check.id} className="hover:bg-gray-50">
+                <tr key={check.id} className="hover:bg-muted/30">
                   <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                        check.status === 'UP'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      <span
-                        className={`inline-block w-1.5 h-1.5 rounded-full mr-1 ${
-                          check.status === 'UP' ? 'bg-green-500' : 'bg-red-500'
-                        }`}
-                      />
+                    <Badge variant={check.status === 'UP' ? 'default' : 'destructive'}>
                       {check.status}
-                    </span>
+                    </Badge>
                   </td>
-                  <td className="px-4 py-3 text-gray-700">
-                    {check.statusCode ?? '-'}
-                  </td>
-                  <td className="px-4 py-3 text-gray-700">
-                    {check.responseTime != null ? `${check.responseTime}ms` : '-'}
-                  </td>
-                  <td className="px-4 py-3 text-gray-500">
-                    {formatTime(check.checkedAt)}
-                  </td>
-                  <td className="px-4 py-3 text-red-600 text-xs max-w-48 truncate">
-                    {check.error || '-'}
-                  </td>
+                  <td className="px-4 py-3">{check.statusCode ?? '-'}</td>
+                  <td className="px-4 py-3">{check.responseTime != null ? `${check.responseTime}ms` : '-'}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{formatTime(check.checkedAt)}</td>
+                  <td className="px-4 py-3 text-destructive text-xs max-w-48 truncate">{check.error || '-'}</td>
                 </tr>
               ))}
             </tbody>
@@ -205,6 +161,5 @@ export default function MonitorDetail() {
 }
 
 function formatTime(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleString();
+  return new Date(iso).toLocaleString();
 }

@@ -1,5 +1,15 @@
 import { useState, useEffect } from 'react';
 import type { Monitor, MonitorMode } from '../api/monitors';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from './ui/dialog';
 
 interface Props {
   open: boolean;
@@ -42,8 +52,6 @@ export default function MonitorForm({ open, editing, minInterval = 300, onClose,
     setError('');
   }, [editing, open]);
 
-  if (!open) return null;
-
   const intervals = ALL_INTERVALS.filter((i) => i.value >= minInterval);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -61,90 +69,78 @@ export default function MonitorForm({ open, editing, minInterval = 300, onClose,
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          {editing ? 'Edit Monitor' : 'New Monitor'}
-        </h2>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{editing ? 'Edit Monitor' : 'New Monitor'}</DialogTitle>
+          <DialogDescription>
+            {editing ? 'Update your monitor settings.' : 'Add a URL to start monitoring.'}
+          </DialogDescription>
+        </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">
+            <div className="bg-destructive/10 border border-destructive/20 text-destructive px-3 py-2 rounded text-sm">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Name
-            </label>
-            <input
-              type="text"
+            <label className="block text-sm font-medium mb-1">Name</label>
+            <Input
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Production API"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              URL
-            </label>
-            <input
+            <label className="block text-sm font-medium mb-1">URL</label>
+            <Input
               type="url"
               required
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="https://api.myapp.com/health"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Mode
-            </label>
+            <label className="block text-sm font-medium mb-1">Mode</label>
             <div className="flex gap-2">
-              <button
+              <Button
                 type="button"
+                variant={mode === 'KEEP_ALIVE' ? 'default' : 'outline'}
                 onClick={() => setMode('KEEP_ALIVE')}
-                className={`flex-1 px-3 py-2 rounded-md text-sm font-medium border transition-colors ${
-                  mode === 'KEEP_ALIVE'
-                    ? 'bg-purple-50 border-purple-300 text-purple-800'
-                    : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
-                }`}
+                className="flex-1"
+                size="sm"
               >
                 Keep Alive
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant={mode === 'FULL_MONITORING' ? 'default' : 'outline'}
                 onClick={() => setMode('FULL_MONITORING')}
-                className={`flex-1 px-3 py-2 rounded-md text-sm font-medium border transition-colors ${
-                  mode === 'FULL_MONITORING'
-                    ? 'bg-blue-50 border-blue-300 text-blue-800'
-                    : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
-                }`}
+                className="flex-1"
+                size="sm"
               >
                 Full Monitoring
-              </button>
+              </Button>
             </div>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {mode === 'KEEP_ALIVE'
-                ? 'Just pings the URL to prevent sleep. No alerts.'
-                : 'Pings + tracks uptime, response time, and sends alerts.'}
+                ? 'Just pings to prevent sleep. No alerts.'
+                : 'Pings + uptime, response time, and alerts.'}
             </p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Check Interval
-            </label>
+            <label className="block text-sm font-medium mb-1">Check Interval</label>
             <select
               value={interval}
               onChange={(e) => setInterval(Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {intervals.map((i) => (
                 <option key={i.value} value={i.value}>
@@ -154,24 +150,16 @@ export default function MonitorForm({ open, editing, minInterval = 300, onClose,
             </select>
           </div>
 
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-            >
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
-            >
+            </Button>
+            <Button type="submit" disabled={loading}>
               {loading ? 'Saving...' : editing ? 'Save Changes' : 'Create Monitor'}
-            </button>
-          </div>
+            </Button>
+          </DialogFooter>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

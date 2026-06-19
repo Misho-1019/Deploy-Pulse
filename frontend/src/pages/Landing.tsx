@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { Button } from '../components/ui/button';
 
 const FEATURES = [
   {
@@ -96,23 +97,17 @@ export default function Landing() {
           <span className="text-xl font-bold text-gray-900">DeployPulse</span>
           <div className="flex items-center gap-4">
             {token ? (
-              <Link
-                to="/app"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
-              >
-                Dashboard
-              </Link>
+              <Button asChild>
+                <Link to="/app">Dashboard</Link>
+              </Button>
             ) : (
               <>
                 <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
                   Sign in
                 </Link>
-                <Link
-                  to="/register"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
-                >
-                  Sign up free
-                </Link>
+              <Button asChild variant="ghost">
+                <Link to="/register">Sign up free</Link>
+              </Button>
               </>
             )}
           </div>
@@ -130,18 +125,12 @@ export default function Landing() {
             Plus uptime monitoring, alerts, and analytics.
           </p>
           <div className="mt-8 flex gap-4 justify-center">
-            <Link
-              to="/register"
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg text-base font-medium hover:bg-blue-700 transition-colors shadow-sm"
-            >
-              Start monitoring for free
-            </Link>
-            <Link
-              to="/login"
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg text-base font-medium hover:bg-gray-50 transition-colors"
-            >
-              Sign in
-            </Link>
+              <Button asChild size="lg">
+                <Link to="/register">Start monitoring for free</Link>
+              </Button>
+              <Button variant="outline" size="lg" asChild>
+                <Link to="/login">Sign in</Link>
+              </Button>
           </div>
           <p className="mt-4 text-sm text-gray-400">No credit card required. 3 monitors free forever.</p>
         </div>
@@ -222,30 +211,19 @@ export default function Landing() {
                   ))}
                 </ul>
                 {plan.cta === 'Start Free' && !token ? (
-                  <Link
-                    to="/register"
-                    className="block w-full text-center py-2 rounded-md text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    {plan.cta}
-                  </Link>
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link to="/register">{plan.cta}</Link>
+                  </Button>
                 ) : plan.cta === 'Start Free' && token ? (
-                  <Link
-                    to="/app"
-                    className="block w-full text-center py-2 rounded-md text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    Dashboard
-                  </Link>
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link to="/app">Dashboard</Link>
+                  </Button>
                 ) : (
-                  <Link
-                    to={token ? plan.href : '/register'}
-                    className={`block w-full text-center py-2 rounded-md text-sm font-medium transition-colors ${
-                      plan.featured
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                        : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    {token ? plan.cta : 'Get Started'}
-                  </Link>
+                  <Button className="w-full" variant={plan.featured ? 'default' : 'outline'} asChild>
+                    <Link to={token ? plan.href : '/register'}>
+                      {token ? plan.cta : 'Get Started'}
+                    </Link>
+                  </Button>
                 )}
               </div>
             ))}
