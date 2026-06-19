@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from "express";
-import { handleWebhook, AppError } from "../services/billing.js";
+import { handleWebhook } from "../services/billing.js";
+import { AppError } from "../lib/errors.js";
 
 const router = Router();
 
@@ -13,11 +14,11 @@ router.post(
       await handleWebhook(rawBody, signature);
       res.json({ received: true });
     } catch (err) {
+      console.error("[StripeWebhook] Error:", err instanceof Error ? err.message : err);
       if (err instanceof AppError) {
         res.status(err.statusCode).json({ error: err.message });
         return;
       }
-      // Always return 200 to Stripe to prevent retries
       res.status(200).json({ received: false });
     }
   }

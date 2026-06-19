@@ -1,5 +1,7 @@
 import { prisma } from "../lib/prisma.js";
+import { AppError } from "../lib/errors.js";
 import type { MonitorMode } from "../generated/prisma/client.js";
+import { getHistoryClamp } from "../middleware/planLimits.js";
 
 const VALID_URL_REGEX = /^https?:\/\/.+/;
 const VALID_INTERVALS = [60, 120, 300, 600, 900, 1800, 3600];
@@ -126,10 +128,17 @@ export async function getUptimeStats(monitorId: string, userId: string) {
   if (!monitor) throw new AppError("Monitor not found", 404);
 
   const now = new Date();
+  const historyClamp = getHistoryClamp(
+    ((await prisma.user.findUnique({
+      where: { id: userId },
+      select: { plan: true },
+    })) || { plan: "FREE" }).plan
+  );
+
   const periods: { key: string; since: Date }[] = [
-    { key: "day", since: new Date(now.getTime() - 24 * 60 * 60 * 1000) },
-    { key: "week", since: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) },
-    { key: "month", since: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) },
+    { key: "day", since: new Date(Math.max(historyClamp.getTime(), now.getTime() - 24 * 60 * 60 * 1000)) },
+    { key: "week", since: new Date(Math.max(historyClamp.getTime(), now.getTime() - 7 * 24 * 60 * 60 * 1000)) },
+    { key: "month", since: new Date(Math.max(historyClamp.getTime(), now.getTime() - 30 * 24 * 60 * 60 * 1000)) },
   ];
 
   const result: Record<string, number> = {};
@@ -163,7 +172,14 @@ export async function getResponseTimeData(
   if (!monitor) throw new AppError("Monitor not found", 404);
 
   const hours = period === "day" ? 24 : period === "week" ? 168 : 720;
-  const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+  const historyClamp = getHistoryClamp(
+    ((await prisma.user.findUnique({
+      where: { id: userId },
+      select: { plan: true },
+    })) || { plan: "FREE" }).plan
+  );
+  const computedSince = new Date(Date.now() - hours * 60 * 60 * 1000);
+  const since = new Date(Math.max(historyClamp.getTime(), computedSince.getTime()));
 
   const checks = await prisma.check.findMany({
     where: {
@@ -212,13 +228,4 @@ export async function toggleChannel(
       ? ({ channels: { set: channels.filter((c) => c !== channel) } } as any)
       : ({ channels: { push: channel } } as any),
   });
-}
-
-export class AppError extends Error {
-  constructor(
-    message: string,
-    public statusCode: number
-  ) {
-    super(message);
-  }
 }

@@ -40,6 +40,8 @@ app.use('/api/billing', billingRoutes);
 
 app.use(errorHandler);
 
+app.set("timeout", 30_000);
+
 app.listen(env.PORT, () => {
   console.log(`DeployPulse API running on http://localhost:${env.PORT}`);
   console.log(`Environment: ${env.NODE_ENV}`);

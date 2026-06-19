@@ -3,8 +3,8 @@ import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import {
   createCheckoutSession,
   createPortalSession,
-  AppError,
 } from "../services/billing.js";
+import { AppError } from "../lib/errors.js";
 import { prisma } from "../lib/prisma.js";
 import { getPlanLimits } from "../middleware/planLimits.js";
 

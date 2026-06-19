@@ -9,8 +9,8 @@ import {
   getResponseTimeData,
   getIncidents,
   toggleChannel,
-  AppError,
 } from "../services/monitor.js";
+import { AppError } from "../lib/errors.js";
 import { prisma } from "../lib/prisma.js";
 import {
   canCreateMonitor,
@@ -30,8 +30,8 @@ router.post("/", async (req: AuthRequest, res, next) => {
       return;
     }
 
-    if (typeof name !== "string" || name.length > 255) {
-      res.status(400).json({ error: "Name must be 255 characters or less" });
+    if (typeof name !== "string" || name.trim().length === 0 || name.length > 255) {
+      res.status(400).json({ error: "Name must be between 1-255 characters" });
       return;
     }
 

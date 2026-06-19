@@ -1,6 +1,7 @@
 import Stripe from "stripe";
 import { env } from "../config/env.js";
 import { prisma } from "../lib/prisma.js";
+import { AppError } from "../lib/errors.js";
 import { sendEmail } from "./notifications/email.js";
 import { sendSlack } from "./notifications/slack.js";
 
@@ -330,14 +331,5 @@ async function notifyPlanChange(
         isDown: true,
       });
     }
-  }
-}
-
-export class AppError extends Error {
-  constructor(
-    message: string,
-    public statusCode: number
-  ) {
-    super(message);
   }
 }

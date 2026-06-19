@@ -2,8 +2,14 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from "../lib/prisma.js";
 import { env } from "../config/env.js";
+import { AppError } from "../lib/errors.js";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function register(email: string, password: string, name?: string) {
+  if (!EMAIL_REGEX.test(email)) {
+    throw new AppError("Invalid email format", 400);
+  }
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
     throw new AppError("Email already registered", 409);
@@ -22,6 +28,9 @@ export async function register(email: string, password: string, name?: string) {
 }
 
 export async function login(email: string, password: string) {
+  if (!EMAIL_REGEX.test(email)) {
+    throw new AppError("Invalid email or password", 401);
+  }
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
     throw new AppError("Invalid email or password", 401);
@@ -49,13 +58,4 @@ function generateToken(userId: string): string {
   return jwt.sign({ sub: userId }, env.JWT_SECRET, {
     expiresIn: env.JWT_EXPIRES_IN,
   } as jwt.SignOptions);
-}
-
-export class AppError extends Error {
-  constructor(
-    message: string,
-    public statusCode: number
-  ) {
-    super(message);
-  }
 }
