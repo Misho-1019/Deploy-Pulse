@@ -34,7 +34,7 @@ export default function MonitorCard({
   const hasSlack = monitor.channels.includes('SLACK');
 
   return (
-    <Card className={isKeepAlive ? 'border-purple-200 bg-purple-50/30' : ''}>
+    <Card className={isKeepAlive ? 'border-purple-200 dark:border-purple-900/50 bg-purple-50/30 dark:bg-purple-950/20' : ''}>
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -103,7 +103,7 @@ export default function MonitorCard({
               onClick={() => onToggleChannel(monitor.id, 'EMAIL')}
               className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
                 hasEmail
-                  ? 'bg-blue-100 text-blue-700'
+                  ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
                   : 'bg-muted text-muted-foreground'
               }`}
             >
@@ -113,7 +113,7 @@ export default function MonitorCard({
               onClick={() => onToggleChannel(monitor.id, 'SLACK')}
               className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
                 hasSlack
-                  ? 'bg-green-100 text-green-700'
+                  ? 'bg-green-500/10 text-green-600 dark:text-green-400'
                   : 'bg-muted text-muted-foreground'
               }`}
             >

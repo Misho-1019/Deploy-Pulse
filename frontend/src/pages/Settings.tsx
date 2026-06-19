@@ -143,7 +143,7 @@ export default function Settings() {
         <div className="bg-card rounded-lg border p-5">
           <div className="flex items-center gap-2 mb-2">
             <h3 className="font-semibold">💬 Slack</h3>
-            {slackConfigured && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Connected</span>}
+            {slackConfigured && <span className="text-xs bg-green-500/10 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full font-medium">Connected</span>}
           </div>
           <p className="text-sm text-muted-foreground mb-4">
             Get alerts in Slack via Incoming Webhooks.{' '}
@@ -183,8 +183,8 @@ export default function Settings() {
           <div className="flex items-center gap-2 mb-2">
             <h3 className="font-semibold">Plan</h3>
             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-              plan === 'FREE' ? 'bg-secondary text-secondary-foreground' :
-              plan === 'STARTER' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+              plan === 'FREE' ? 'border border-border text-muted-foreground' :
+              plan === 'STARTER' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400' : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
             }`}>
               {plan}
             </span>
@@ -196,13 +196,13 @@ export default function Settings() {
           </p>
 
           {checkoutMsg === 'success' && (
-            <div className="mb-3 bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded text-sm flex justify-between">
+            <div className="mb-3 bg-green-500/10 border border-green-500/20 text-green-700 dark:text-green-400 px-3 py-2 rounded text-sm flex justify-between">
               <span>Payment successful!</span>
               <button onClick={clearCheckoutMsg} className="text-muted-foreground hover:text-foreground">&times;</button>
             </div>
           )}
           {checkoutMsg === 'cancelled' && (
-            <div className="mb-3 bg-yellow-50 border border-yellow-200 text-yellow-700 px-3 py-2 rounded text-sm flex justify-between">
+            <div className="mb-3 bg-yellow-500/10 border border-yellow-500/20 text-yellow-700 dark:text-yellow-400 px-3 py-2 rounded text-sm flex justify-between">
               <span>Checkout cancelled.</span>
               <button onClick={clearCheckoutMsg} className="text-muted-foreground hover:text-foreground">&times;</button>
             </div>

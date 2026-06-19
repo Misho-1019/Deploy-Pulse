@@ -114,10 +114,10 @@ export default function Dashboard() {
               <span className="ml-2">
                 <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
                   billingStatus.plan === 'FREE'
-                    ? 'bg-secondary text-secondary-foreground'
+                    ? 'border border-border text-muted-foreground'
                     : billingStatus.plan === 'STARTER'
-                      ? 'bg-purple-100 text-purple-800'
-                      : 'bg-blue-100 text-blue-800'
+                      ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                      : 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
                 }`}>
                   {billingStatus.plan}
                 </span>
@@ -145,11 +145,11 @@ export default function Dashboard() {
       )}
 
       {exceededPlan && (
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded text-sm mb-4 flex items-center justify-between">
+        <div className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-700 dark:text-yellow-400 px-4 py-3 rounded text-sm mb-4 flex items-center justify-between">
           <span>
             Your plan was downgraded to {billingStatus!.plan}. You have {billingStatus!.monitorCount} monitors but the {billingStatus!.plan.toLowerCase()} plan allows {billingStatus!.maxMonitors}. Existing monitors are safe, but you cannot add more.
           </span>
-          <Button variant="outline" size="sm" className="ml-4 shrink-0 text-yellow-800 border-yellow-300 hover:bg-yellow-100" asChild>
+          <Button variant="outline" size="sm" className="ml-4 shrink-0 border-yellow-500/30 hover:bg-yellow-500/10" asChild>
             <Link to="/app/settings">Upgrade</Link>
           </Button>
         </div>

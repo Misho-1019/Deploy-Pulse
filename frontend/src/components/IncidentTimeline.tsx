@@ -50,7 +50,7 @@ export default function IncidentTimeline({ monitorId }: Props) {
                 </p>
                 {incident.resolvedAt ? (
                   <p className="text-muted-foreground">
-                    <span className="font-medium text-green-600">Recovered</span>
+                    <span className="font-medium text-green-600 dark:text-green-400">Recovered</span>
                     {' — '}{end!.toLocaleString()}
                     <span className="text-muted-foreground ml-2">({formatDuration(duration)})</span>
                   </p>

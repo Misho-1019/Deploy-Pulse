@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import * as monitorsApi from '../api/monitors';
 import type { Check } from '../api/monitors';
@@ -22,7 +22,6 @@ const MODE_LABELS: Record<string, string> = {
 
 export default function MonitorDetail() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
 
   const {
     data: monitor,
@@ -117,9 +116,6 @@ export default function MonitorDetail() {
 
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-lg font-semibold">Check History</h3>
-        <Button variant="ghost" onClick={() => navigate("/app")}>
-          Back to Dashboard
-        </Button>
       </div>
 
       {checks.length === 0 ? (

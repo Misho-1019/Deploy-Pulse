@@ -27,9 +27,9 @@ export default function UptimeBadges({ monitorId }: Props) {
   if (!stats) return null;
 
   function badgeColor(value: number) {
-    if (value >= 99.9) return 'bg-green-50 text-green-700 border-green-200';
-    if (value >= 95) return 'bg-yellow-50 text-yellow-700 border-yellow-200';
-    return 'bg-red-50 text-red-700 border-red-200';
+    if (value >= 99.9) return 'bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400';
+    if (value >= 95) return 'bg-yellow-500/10 border-yellow-500/20 text-yellow-600 dark:text-yellow-400';
+    return 'bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400';
   }
 
   const periods: Array<{ key: keyof typeof stats; label: string }> = [
