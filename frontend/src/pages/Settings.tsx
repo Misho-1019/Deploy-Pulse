@@ -1,12 +1,14 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
+import { toast } from 'sonner';
 import * as userApi from '../api/user';
 import * as billingApi from '../api/billing';
 
 export default function Settings() {
+  const [searchParams] = useSearchParams();
   const [slackUrl, setSlackUrl] = useState('');
   const [slackSaving, setSlackSaving] = useState(false);
   const [slackStatus, setSlackStatus] = useState('');
@@ -29,6 +31,31 @@ export default function Settings() {
     queryFn: () => billingApi.getBillingStatus(),
     staleTime: 60_000,
   });
+
+  // Sync Slack URL from settings
+  useEffect(() => {
+    if (userSettings?.slackWebhookUrl) {
+      setSlackUrl(userSettings.slackWebhookUrl);
+    }
+  }, [userSettings?.slackWebhookUrl]);
+
+  // Auto-trigger checkout from ?plan param
+  useEffect(() => {
+    const planParam = searchParams.get('plan');
+    if (planParam === 'starter' && billing?.plan === 'FREE') {
+      const priceId = 'price_1Tjj5ePW9LwsuQfOH66CdRQG';
+      toast.info('Redirecting to checkout...');
+      billingApi.createCheckout(priceId).then(({ url }) => {
+        window.location.href = url;
+      }).catch(() => toast.error('Failed to start checkout'));
+    } else if (planParam === 'pro' && billing?.plan === 'FREE') {
+      const priceId = 'price_1Tjj7SPW9LwsuQfOPDli7znA';
+      toast.info('Redirecting to checkout...');
+      billingApi.createCheckout(priceId).then(({ url }) => {
+        window.location.href = url;
+      }).catch(() => toast.error('Failed to start checkout'));
+    }
+  }, []); // Only run once on mount
 
   async function handleTestAlert() {
     setSending(true);
@@ -77,11 +104,6 @@ export default function Settings() {
     url.searchParams.delete('checkout');
     window.history.replaceState({}, '', url);
     setCheckoutMsg(null);
-  }
-
-  // Sync Slack URL when settings load
-  if (userSettings?.slackWebhookUrl && !slackUrl) {
-    setSlackUrl(userSettings.slackWebhookUrl);
   }
 
   const plan = billing?.plan || 'FREE';

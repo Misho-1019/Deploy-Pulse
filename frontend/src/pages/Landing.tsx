@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/button';
+import ThemeToggle from '../components/ThemeToggle';
 
 const FEATURES = [
   {
     title: 'Keep Alive',
     description: 'Prevent your free-tier Render, Railway, and Heroku apps from sleeping with periodic pings.',
     icon: (
-      <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="w-6 h-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
       </svg>
     ),
@@ -16,7 +17,7 @@ const FEATURES = [
     title: 'Uptime Monitoring',
     description: 'Track uptime percentages and response times. Know instantly when something goes wrong.',
     icon: (
-      <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="w-6 h-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
       </svg>
     ),
@@ -25,7 +26,7 @@ const FEATURES = [
     title: 'Email Alerts',
     description: 'Get notified the moment a service goes down. No more discovering downtime from customers.',
     icon: (
-      <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
       </svg>
     ),
@@ -34,7 +35,7 @@ const FEATURES = [
     title: 'Incident History',
     description: 'Review past outages with detailed timelines. See exactly when issues occurred and how long they lasted.',
     icon: (
-      <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="w-6 h-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     ),
@@ -43,7 +44,7 @@ const FEATURES = [
     title: 'Response Charts',
     description: 'Visualize response time trends. Spot performance degradation before your users do.',
     icon: (
-      <svg className="w-6 h-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="w-6 h-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
       </svg>
     ),
@@ -52,7 +53,7 @@ const FEATURES = [
     title: 'Simple Setup',
     description: 'Add a URL, pick a mode, and you are done. No complex configuration or infrastructure knowledge required.',
     icon: (
-      <svg className="w-6 h-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="w-6 h-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
       </svg>
     ),
@@ -90,24 +91,25 @@ export default function Landing() {
   const { token } = useAuth();
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="border-b border-gray-100">
+      <header className="border-b border-border">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <span className="text-xl font-bold text-gray-900">DeployPulse</span>
-          <div className="flex items-center gap-4">
+          <span className="text-xl font-bold">DeployPulse</span>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
             {token ? (
               <Button asChild>
                 <Link to="/app">Dashboard</Link>
               </Button>
             ) : (
               <>
-                <Link to="/login" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Sign in
                 </Link>
-              <Button asChild variant="ghost">
-                <Link to="/register">Sign up free</Link>
-              </Button>
+                <Button asChild>
+                  <Link to="/register">Sign up free</Link>
+                </Button>
               </>
             )}
           </div>
@@ -115,41 +117,42 @@ export default function Landing() {
       </header>
 
       {/* Hero */}
-      <section className="py-20 px-4">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight">
+      <section className="relative py-24 px-4 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/10" />
+        <div className="relative max-w-3xl mx-auto text-center">
+          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
             Never wake a sleeping app again
           </h1>
-          <p className="mt-6 text-lg text-gray-500 max-w-xl mx-auto">
+          <p className="mt-6 text-lg text-muted-foreground max-w-xl mx-auto">
             DeployPulse pings your free-tier apps to prevent sleep on Render, Railway, and Heroku.
             Plus uptime monitoring, alerts, and analytics.
           </p>
           <div className="mt-8 flex gap-4 justify-center">
-              <Button asChild size="lg">
-                <Link to="/register">Start monitoring for free</Link>
-              </Button>
-              <Button variant="outline" size="lg" asChild>
-                <Link to="/login">Sign in</Link>
-              </Button>
+            <Button asChild size="lg">
+              <Link to="/register">Start monitoring for free</Link>
+            </Button>
+            <Button variant="outline" size="lg" asChild>
+              <Link to="/login">Sign in</Link>
+            </Button>
           </div>
-          <p className="mt-4 text-sm text-gray-400">No credit card required. 3 monitors free forever.</p>
+          <p className="mt-4 text-sm text-muted-foreground">No credit card required. 3 monitors free forever.</p>
         </div>
       </section>
 
       {/* Features */}
-      <section className="py-16 bg-gray-50 px-4">
+      <section className="py-16 bg-muted/50 px-4">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12">
             Everything you need to keep your apps alive
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {FEATURES.map((f) => (
-              <div key={f.title} className="bg-white rounded-xl border border-gray-200 p-6">
-                <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center mb-4">
+              <div key={f.title} className="bg-card rounded-xl border border-border p-6">
+                <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center mb-4">
                   {f.icon}
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">{f.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{f.description}</p>
+                <h3 className="font-semibold mb-2">{f.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{f.description}</p>
               </div>
             ))}
           </div>
@@ -159,8 +162,8 @@ export default function Landing() {
       {/* How it works */}
       <section className="py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">How it works</h2>
-          <p className="text-gray-500 mb-12">Three simple steps to keep your apps awake.</p>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-4">How it works</h2>
+          <p className="text-muted-foreground mb-12">Three simple steps to keep your apps awake.</p>
           <div className="grid sm:grid-cols-3 gap-8">
             {[
               { step: '1', title: 'Add a URL', desc: 'Enter the URL of your app or API endpoint.' },
@@ -168,11 +171,11 @@ export default function Landing() {
               { step: '3', title: 'Relax', desc: 'DeployPulse pings your app on schedule. You get alerts if something breaks.' },
             ].map((s) => (
               <div key={s.step}>
-                <div className="w-12 h-12 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
+                <div className="w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
                   {s.step}
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-1">{s.title}</h3>
-                <p className="text-sm text-gray-500">{s.desc}</p>
+                <h3 className="font-semibold mb-1">{s.title}</h3>
+                <p className="text-sm text-muted-foreground">{s.desc}</p>
               </div>
             ))}
           </div>
@@ -180,32 +183,32 @@ export default function Landing() {
       </section>
 
       {/* Pricing */}
-      <section className="py-16 bg-gray-50 px-4">
+      <section className="py-16 bg-muted/50 px-4">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-4">
             Simple, transparent pricing
           </h2>
-          <p className="text-gray-500 text-center mb-12">
+          <p className="text-muted-foreground text-center mb-12">
             Start free. Upgrade when you need more.
           </p>
           <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
             {PLANS.map((plan) => (
               <div
                 key={plan.name}
-                className={`rounded-xl border p-6 ${
+                className={`rounded-xl border p-6 transition-colors ${
                   plan.featured
-                    ? 'border-blue-300 bg-white shadow-md ring-1 ring-blue-100'
-                    : 'border-gray-200 bg-white'
+                    ? 'border-primary/30 bg-card shadow-md ring-1 ring-primary/10'
+                    : 'border-border bg-card'
                 }`}
               >
-                <h3 className="font-semibold text-gray-900 mb-2">{plan.name}</h3>
+                <h3 className="font-semibold mb-2">{plan.name}</h3>
                 <div className="mb-4">
-                  <span className="text-3xl font-bold text-gray-900">{plan.price}</span>
-                  {plan.period && <span className="text-gray-400 text-sm">{plan.period}</span>}
+                  <span className="text-3xl font-bold">{plan.price}</span>
+                  {plan.period && <span className="text-muted-foreground text-sm">{plan.period}</span>}
                 </div>
                 <ul className="space-y-2 mb-6">
                   {plan.features.map((f) => (
-                    <li key={f} className="text-sm text-gray-600 flex items-center gap-2">
+                    <li key={f} className="text-sm text-muted-foreground flex items-center gap-2">
                       <span className="text-green-500">&check;</span> {f}
                     </li>
                   ))}
@@ -220,7 +223,7 @@ export default function Landing() {
                   </Button>
                 ) : (
                   <Button className="w-full" variant={plan.featured ? 'default' : 'outline'} asChild>
-                    <Link to={token ? plan.href : '/register'}>
+                    <Link to={token ? plan.href : `/register?redirect=${encodeURIComponent('/app/settings?plan=' + plan.name.toLowerCase())}`}>
                       {token ? plan.cta : 'Get Started'}
                     </Link>
                   </Button>
@@ -232,8 +235,8 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 px-4 border-t border-gray-100">
-        <div className="max-w-6xl mx-auto text-center text-sm text-gray-400">
+      <footer className="py-8 px-4 border-t border-border">
+        <div className="max-w-6xl mx-auto text-center text-sm text-muted-foreground">
           <p>DeployPulse &mdash; Keep your apps alive. Built for indie developers.</p>
         </div>
       </footer>
