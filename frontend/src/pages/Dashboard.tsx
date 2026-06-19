@@ -9,6 +9,7 @@ import * as billingApi from '../api/billing';
 import type { Monitor, MonitorMode } from '../api/monitors';
 import MonitorCard from '../components/MonitorCard';
 import MonitorForm from '../components/MonitorForm';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -16,6 +17,7 @@ export default function Dashboard() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Monitor | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const {
     data: monitors = [],
@@ -82,11 +84,7 @@ export default function Dashboard() {
   }
 
   function handleDelete(id: string) {
-    if (!confirm('Delete this monitor?')) return;
-    setDeletingId(id);
-    deleteMutation.mutate(id, {
-      onSettled: () => setDeletingId(null),
-    });
+    setConfirmDeleteId(id);
   }
 
   function handleToggleChannel(id: string, channel: string) {
@@ -196,6 +194,23 @@ export default function Dashboard() {
         minInterval={billingStatus?.minInterval}
         onClose={() => { setFormOpen(false); setEditing(null); }}
         onSubmit={editing ? handleUpdate : handleCreate}
+      />
+
+      <ConfirmDialog
+        open={!!confirmDeleteId}
+        title="Delete Monitor"
+        description="This will permanently delete this monitor and all its check history. This action cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={() => {
+          const id = confirmDeleteId!;
+          setConfirmDeleteId(null);
+          setDeletingId(id);
+          deleteMutation.mutate(id, {
+            onSettled: () => setDeletingId(null),
+          });
+        }}
+        onCancel={() => setConfirmDeleteId(null)}
       />
     </div>
   );

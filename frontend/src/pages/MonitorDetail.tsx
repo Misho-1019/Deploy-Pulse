@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import * as monitorsApi from '../api/monitors';
@@ -55,6 +56,9 @@ export default function MonitorDetail() {
   }
 
   const checks: Check[] = monitor.checks || [];
+  const [visibleCount, setVisibleCount] = useState(20);
+  const displayedChecks = checks.slice(0, visibleCount);
+  const hasMore = checks.length > visibleCount;
 
   return (
     <div>
@@ -135,7 +139,7 @@ export default function MonitorDetail() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {checks.map((check) => (
+              {displayedChecks.map((check) => (
                 <tr key={check.id} className="hover:bg-muted/30">
                   <td className="px-4 py-3">
                     <Badge variant={check.status === 'UP' ? 'default' : 'destructive'}>
@@ -150,6 +154,16 @@ export default function MonitorDetail() {
               ))}
             </tbody>
           </table>
+          {hasMore && (
+            <div className="px-4 py-3 border-t text-center">
+              <Button
+                variant="ghost"
+                onClick={() => setVisibleCount((c) => c + 20)}
+              >
+                Show more ({checks.length - visibleCount} remaining)
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>

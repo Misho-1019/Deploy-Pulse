@@ -34,7 +34,10 @@ export default function MonitorCard({
   const hasSlack = monitor.channels.includes('SLACK');
 
   return (
-    <Card className={isKeepAlive ? 'border-purple-200 dark:border-purple-900/50 bg-purple-50/30 dark:bg-purple-950/20' : ''}>
+    <Card className={isKeepAlive
+      ? 'border-purple-200 dark:border-purple-900/50 bg-purple-50/30 dark:bg-purple-950/20 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200'
+      : 'hover:shadow-md hover:-translate-y-0.5 transition-all duration-200'
+    }>
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">

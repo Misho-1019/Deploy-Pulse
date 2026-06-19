@@ -6,6 +6,7 @@ import { Input } from '../components/ui/input';
 import { toast } from 'sonner';
 import * as userApi from '../api/user';
 import * as billingApi from '../api/billing';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function Settings() {
   const [searchParams] = useSearchParams();
@@ -16,6 +17,7 @@ export default function Settings() {
   const [sending, setSending] = useState(false);
   const [billingUpgradeError, setBillingUpgradeError] = useState('');
   const [billingManageError, setBillingManageError] = useState('');
+  const [confirmRemoveSlack, setConfirmRemoveSlack] = useState(false);
   const [checkoutMsg, setCheckoutMsg] = useState<string | null>(
     () => new URL(window.location.href).searchParams.get('checkout')
   );
@@ -86,8 +88,8 @@ export default function Settings() {
   }
 
   async function handleRemoveSlack() {
-    if (!confirm('Remove Slack integration?')) return;
     setSlackSaving(true);
+    setConfirmRemoveSlack(false);
     try {
       await userApi.removeSlackConfig();
       setSlackUrl('');
@@ -157,7 +159,7 @@ export default function Settings() {
                 {slackSaving ? 'Saving...' : 'Save'}
               </Button>
               {slackConfigured && (
-                <Button type="button" variant="destructive" onClick={handleRemoveSlack}>Remove</Button>
+                <Button type="button" variant="destructive" onClick={() => setConfirmRemoveSlack(true)}>Remove</Button>
               )}
             </div>
             {slackStatus && (
@@ -246,6 +248,16 @@ export default function Settings() {
           </p>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmRemoveSlack}
+        title="Remove Slack Integration"
+        description="This will disconnect Slack from your account. You can reconnect at any time."
+        confirmLabel="Remove"
+        variant="destructive"
+        onConfirm={handleRemoveSlack}
+        onCancel={() => setConfirmRemoveSlack(false)}
+      />
     </div>
   );
 }
