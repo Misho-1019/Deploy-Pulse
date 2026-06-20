@@ -98,8 +98,8 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
+      <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
+        <div className="min-w-0">
           <h2 className="text-2xl font-semibold">
             Welcome{user?.name ? `, ${user.name}` : ''}
           </h2>
@@ -144,7 +144,7 @@ export default function Dashboard() {
       </div>
 
       {monitors.length > 0 && (
-        <div className="grid grid-cols-4 gap-3 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4">
           <Card className="border-border">
             <CardContent className="p-3 text-center">
               <div className="text-lg font-bold">{monitors.length}</div>

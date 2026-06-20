@@ -135,10 +135,10 @@ export default function MonitorDetail() {
             <thead className="bg-muted/50 border-b">
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Code</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Response</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden sm:table-cell">Code</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden sm:table-cell">Response</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Time</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Error</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden sm:table-cell">Error</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -149,10 +149,10 @@ export default function MonitorDetail() {
                       {check.status}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3">{check.statusCode ?? '-'}</td>
-                  <td className="px-4 py-3">{check.responseTime != null ? `${check.responseTime}ms` : '-'}</td>
+                  <td className="px-4 py-3 hidden sm:table-cell">{check.statusCode ?? '-'}</td>
+                  <td className="px-4 py-3 hidden sm:table-cell">{check.responseTime != null ? `${check.responseTime}ms` : '-'}</td>
                   <td className="px-4 py-3 text-muted-foreground">{formatTime(check.checkedAt)}</td>
-                  <td className="px-4 py-3 text-destructive text-xs max-w-48 truncate">{check.error || '-'}</td>
+                  <td className="px-4 py-3 text-destructive text-xs max-w-48 truncate hidden sm:table-cell">{check.error || '-'}</td>
                 </tr>
               ))}
             </tbody>

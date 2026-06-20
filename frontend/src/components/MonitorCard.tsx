@@ -67,7 +67,7 @@ export default function MonitorCard({
               )}
             </div>
           </div>
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-1 shrink-0 hidden sm:flex">
             {!isKeepAlive && (
               <div className="flex items-center gap-1 mr-1">
                 <button
@@ -101,6 +101,29 @@ export default function MonitorCard({
           </div>
         </div>
       </CardContent>
+
+      <div className="flex sm:hidden items-center gap-1 px-3 pb-2 border-t pt-2">
+        {!isKeepAlive && (
+          <div className="flex items-center gap-1 flex-1">
+            <button
+              onClick={() => onToggleChannel(monitor.id, 'EMAIL')}
+              className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                hasEmail ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'bg-muted text-muted-foreground'
+              }`}
+            >📧</button>
+            <button
+              onClick={() => onToggleChannel(monitor.id, 'SLACK')}
+              className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                hasSlack ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-muted text-muted-foreground'
+              }`}
+            >💬</button>
+          </div>
+        )}
+        <Button variant="ghost" size="sm" className="h-7 px-2 text-[10px]" onClick={() => onEdit(monitor)}>Edit</Button>
+        <Button variant="ghost" size="sm" className="h-7 px-2 text-[10px] text-destructive hover:text-destructive" disabled={isDeleting} onClick={() => onDelete(monitor.id)}>
+          {isDeleting ? '...' : 'Del'}
+        </Button>
+      </div>
     </Card>
     </motion.div>
   );
