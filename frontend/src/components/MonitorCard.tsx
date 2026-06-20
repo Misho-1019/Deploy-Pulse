@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import type { Monitor } from '../api/monitors';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
@@ -28,6 +29,13 @@ export default function MonitorCard({
     : null;
 
   return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.2 }}
+      layout
+    >
     <Card className={isKeepAlive
       ? 'border-purple-200 dark:border-purple-900/50 bg-purple-50/30 dark:bg-purple-950/20 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200'
       : 'hover:shadow-md hover:-translate-y-0.5 transition-all duration-200'
@@ -83,6 +91,7 @@ export default function MonitorCard({
         </div>
       </CardContent>
     </Card>
+    </motion.div>
   );
 }
 

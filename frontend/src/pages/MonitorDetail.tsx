@@ -140,7 +140,7 @@ export default function MonitorDetail() {
             </thead>
             <tbody className="divide-y divide-border">
               {displayedChecks.map((check) => (
-                <tr key={check.id} className="hover:bg-muted/30">
+                <tr key={check.id} className="hover:bg-muted/30 transition-colors">
                   <td className="px-4 py-3">
                     <Badge variant={check.status === 'UP' ? 'default' : 'destructive'}>
                       {check.status}
