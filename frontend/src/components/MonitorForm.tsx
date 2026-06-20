@@ -140,7 +140,7 @@ export default function MonitorForm({ open, editing, minInterval = 300, onClose,
             <select
               value={interval}
               onChange={(e) => setInterval(Number(e.target.value))}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="flex h-10 w-full rounded-md border border-input bg-background text-foreground px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               {intervals.map((i) => (
                 <option key={i.value} value={i.value}>
