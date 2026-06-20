@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/button';
+import { Badge } from '../components/ui/badge';
 import ThemeToggle from '../components/ThemeToggle';
+import * as billingApi from '../api/billing';
 
 const FEATURES = [
   {
@@ -89,6 +92,14 @@ const PLANS = [
 
 export default function Landing() {
   const { token } = useAuth();
+  const { data: billing } = useQuery({
+    queryKey: ['billing'],
+    queryFn: () => billingApi.getBillingStatus(),
+    enabled: !!token,
+    staleTime: 60_000,
+  });
+
+  const userPlan = billing?.plan || 'FREE';
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -192,16 +203,24 @@ export default function Landing() {
             Start free. Upgrade when you need more.
           </p>
           <div className="grid sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            {PLANS.map((plan) => (
+            {PLANS.map((plan) => {
+              const isCurrentPlan = token && userPlan === plan.name.toUpperCase();
+
+              return (
               <div
                 key={plan.name}
-                className={`rounded-xl border p-6 transition-colors ${
-                  plan.featured
-                    ? 'border-primary/30 bg-card shadow-md ring-1 ring-primary/10'
-                    : 'border-border bg-card'
+                className={`rounded-xl border p-6 transition-all duration-200 ${
+                  isCurrentPlan
+                    ? 'border-primary bg-primary/5 shadow-md ring-2 ring-primary/20 scale-[1.02]'
+                    : 'border-border bg-card hover:border-primary/30 hover:shadow-md hover:ring-1 hover:ring-primary/10 hover:scale-[1.02]'
                 }`}
               >
-                <h3 className="font-semibold mb-2">{plan.name}</h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="font-semibold">{plan.name}</h3>
+                  {isCurrentPlan && (
+                    <Badge variant="default" className="text-[10px] px-1.5">Current</Badge>
+                  )}
+                </div>
                 <div className="mb-4">
                   <span className="text-3xl font-bold">{plan.price}</span>
                   {plan.period && <span className="text-muted-foreground text-sm">{plan.period}</span>}
@@ -209,11 +228,13 @@ export default function Landing() {
                 <ul className="space-y-2 mb-6">
                   {plan.features.map((f) => (
                     <li key={f} className="text-sm text-muted-foreground flex items-center gap-2">
-                      <span className="text-green-500">&check;</span> {f}
+                      <span className="text-green-500">✓</span> {f}
                     </li>
                   ))}
                 </ul>
-                {plan.cta === 'Start Free' && !token ? (
+                {isCurrentPlan ? (
+                  <Button className="w-full" disabled>Current Plan</Button>
+                ) : plan.cta === 'Start Free' && !token ? (
                   <Button variant="outline" className="w-full" asChild>
                     <Link to="/register">{plan.cta}</Link>
                   </Button>
@@ -224,12 +245,13 @@ export default function Landing() {
                 ) : (
                   <Button className="w-full" variant={plan.featured ? 'default' : 'outline'} asChild>
                     <Link to={token ? plan.href : `/register?redirect=${encodeURIComponent('/app/settings?plan=' + plan.name.toLowerCase())}`}>
-                      {token ? plan.cta : 'Get Started'}
+                      {token ? (userPlan === 'FREE' ? plan.cta : plan.name === 'Starter' && userPlan === 'PRO' ? 'Downgrade' : 'Upgrade') : 'Get Started'}
                     </Link>
                   </Button>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>

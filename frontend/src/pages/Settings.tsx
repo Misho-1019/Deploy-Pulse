@@ -18,6 +18,7 @@ export default function Settings() {
   const [billingUpgradeError, setBillingUpgradeError] = useState('');
   const [billingManageError, setBillingManageError] = useState('');
   const [confirmRemoveSlack, setConfirmRemoveSlack] = useState(false);
+  const [upgrading, setUpgrading] = useState(false);
   const [checkoutMsg, setCheckoutMsg] = useState<string | null>(
     () => new URL(window.location.href).searchParams.get('checkout')
   );
@@ -219,24 +220,36 @@ export default function Settings() {
           <div className="flex flex-wrap gap-2">
             {plan === 'FREE' && (
               <>
-                <Button onClick={async () => {
-                  setBillingUpgradeError('');
-                  try { const { url } = await billingApi.createCheckout('price_1Tjj5ePW9LwsuQfOH66CdRQG'); window.location.href = url; }
-                  catch (e: any) { setBillingUpgradeError(e?.response?.data?.error || 'Failed'); }
-                }}>Upgrade to Starter ($5/mo)</Button>
-                <Button variant="outline" onClick={async () => {
-                  setBillingUpgradeError('');
-                  try { const { url } = await billingApi.createCheckout('price_1Tjj7SPW9LwsuQfOPDli7znA'); window.location.href = url; }
-                  catch (e: any) { setBillingUpgradeError(e?.response?.data?.error || 'Failed'); }
-                }}>Upgrade to Pro ($15/mo)</Button>
+                <Button
+                  disabled={upgrading}
+                  onClick={async () => {
+                    setBillingUpgradeError('');
+                    setUpgrading(true);
+                    try { const { url } = await billingApi.createCheckout('price_1Tjj5ePW9LwsuQfOH66CdRQG'); window.location.href = url; }
+                    catch (e: any) { setBillingUpgradeError(e?.response?.data?.error || 'Failed'); setUpgrading(false); }
+                  }}>{upgrading ? 'Redirecting...' : 'Upgrade to Starter ($5/mo)'}</Button>
+                <Button
+                  variant="outline"
+                  disabled={upgrading}
+                  onClick={async () => {
+                    setBillingUpgradeError('');
+                    setUpgrading(true);
+                    try { const { url } = await billingApi.createCheckout('price_1Tjj7SPW9LwsuQfOPDli7znA'); window.location.href = url; }
+                    catch (e: any) { setBillingUpgradeError(e?.response?.data?.error || 'Failed'); setUpgrading(false); }
+                  }}>{upgrading ? 'Redirecting...' : 'Upgrade to Pro ($15/mo)'}</Button>
               </>
             )}
             {plan !== 'FREE' && (
-              <Button variant="outline" onClick={async () => {
-                setBillingManageError('');
-                try { const { url } = await billingApi.getPortal(); window.location.href = url; }
-                catch (e: any) { setBillingManageError(e?.response?.data?.error || 'Failed'); }
-              }}>Manage Subscription</Button>
+              <Button
+                variant="outline"
+                disabled={upgrading}
+                onClick={async () => {
+                  setBillingManageError('');
+                  setUpgrading(true);
+                  try { const { url } = await billingApi.getPortal(); window.location.href = url; }
+                  catch (e: any) { setBillingManageError(e?.response?.data?.error || 'Failed'); setUpgrading(false); }
+                }}
+              >{upgrading ? 'Redirecting...' : 'Manage Subscription'}</Button>
             )}
           </div>
         </div>
