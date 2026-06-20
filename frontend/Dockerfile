@@ -3,6 +3,7 @@ WORKDIR /app
 
 COPY package*.json ./
 RUN npm ci
+RUN npm install @rolldown/binding-linux-x64-musl
 
 COPY . .
 RUN npm run build
