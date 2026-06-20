@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -129,24 +130,71 @@ export default function Landing() {
 
       {/* Hero */}
       <section className="relative py-24 px-4 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/10 animate-gradient" />
         <div className="relative max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">
+          {/* Heartbeat Line */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            className="mb-8 flex justify-center"
+          >
+            <svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <polyline
+                points="5,20 25,20 35,8 50,32 65,20 115,20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-primary animate-pulse"
+              />
+            </svg>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-4xl sm:text-5xl font-extrabold tracking-tight"
+          >
             Never wake a sleeping app again
-          </h1>
-          <p className="mt-6 text-lg text-muted-foreground max-w-xl mx-auto">
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="mt-6 text-lg text-muted-foreground max-w-xl mx-auto"
+          >
             DeployPulse pings your free-tier apps to prevent sleep on Render, Railway, and Heroku.
             Plus uptime monitoring, alerts, and analytics.
-          </p>
-          <div className="mt-8 flex gap-4 justify-center">
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="mt-8 flex gap-4 justify-center flex-wrap"
+          >
             <Button asChild size="lg">
               <Link to="/register">Start monitoring for free</Link>
             </Button>
             <Button variant="outline" size="lg" asChild>
               <Link to="/login">Sign in</Link>
             </Button>
-          </div>
-          <p className="mt-4 text-sm text-muted-foreground">No credit card required. 3 monitors free forever.</p>
+            {token && (
+              <Button variant="secondary" size="lg" asChild>
+                <Link to="/app">See live demo</Link>
+              </Button>
+            )}
+          </motion.div>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            className="mt-4 text-sm text-muted-foreground"
+          >
+            No credit card required. 3 monitors free forever.
+          </motion.p>
         </div>
       </section>
 
@@ -157,14 +205,21 @@ export default function Landing() {
             Everything you need to keep your apps alive
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {FEATURES.map((f) => (
-              <div key={f.title} className="bg-card rounded-xl border border-border p-6">
+            {FEATURES.map((f, i) => (
+              <motion.div
+                key={f.title}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.4, delay: i * 0.08 }}
+                className="bg-card rounded-xl border border-border p-6"
+              >
                 <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center mb-4">
                   {f.icon}
                 </div>
                 <h3 className="font-semibold mb-2">{f.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{f.description}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -258,8 +313,13 @@ export default function Landing() {
 
       {/* Footer */}
       <footer className="py-8 px-4 border-t border-border">
-        <div className="max-w-6xl mx-auto text-center text-sm text-muted-foreground">
-          <p>DeployPulse &mdash; Keep your apps alive. Built for indie developers.</p>
+        <div className="max-w-6xl mx-auto text-center">
+          <div className="flex items-center justify-center gap-3 mb-3 flex-wrap">
+            {['React', 'TypeScript', 'Node.js', 'Express', 'PostgreSQL', 'Redis', 'Stripe', 'Docker'].map((t) => (
+              <span key={t} className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded">{t}</span>
+            ))}
+          </div>
+          <p className="text-sm text-muted-foreground">DeployPulse &mdash; Keep your apps alive. Built for indie developers.</p>
         </div>
       </footer>
     </div>
