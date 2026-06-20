@@ -1,9 +1,8 @@
-FROM node:22-alpine AS builder
+FROM node:22-slim AS builder
 WORKDIR /app
 
 COPY package*.json ./
 RUN npm ci
-RUN npm install @rolldown/binding-linux-x64-musl
 
 COPY . .
 RUN npm run build
