@@ -124,6 +124,9 @@ export default function MonitorDetail() {
 
       {checks.length === 0 ? (
         <div className="bg-card rounded-lg border border-dashed text-center py-10">
+          <svg className="w-12 h-12 mx-auto mb-2 text-muted-foreground/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
           <p className="text-muted-foreground">Waiting for first check...</p>
         </div>
       ) : (

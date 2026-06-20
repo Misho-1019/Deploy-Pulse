@@ -23,6 +23,9 @@ export default function IncidentTimeline({ monitorId }: Props) {
   if (incidents.length === 0) {
     return (
       <div className="bg-card rounded-lg border border-dashed p-5 text-center">
+        <svg className="w-10 h-10 mx-auto mb-2 text-muted-foreground/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
         <p className="text-muted-foreground text-sm">No incidents recorded</p>
       </div>
     );

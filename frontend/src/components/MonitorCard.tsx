@@ -4,6 +4,7 @@ import type { Monitor } from '../api/monitors';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 interface Props {
   monitor: Monitor;
@@ -83,10 +84,20 @@ export default function MonitorCard({
                 >💬</button>
               </div>
             )}
-            <Button variant="ghost" size="sm" className="h-7 px-1.5 text-[10px]" onClick={() => onEdit(monitor)}>Edit</Button>
-            <Button variant="ghost" size="sm" className="h-7 px-1.5 text-[10px] text-destructive hover:text-destructive" disabled={isDeleting} onClick={() => onDelete(monitor.id)}>
-              {isDeleting ? '...' : 'Del'}
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-7 px-1.5 text-[10px]" onClick={() => onEdit(monitor)}>Edit</Button>
+              </TooltipTrigger>
+              <TooltipContent>Edit monitor</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-7 px-1.5 text-[10px] text-destructive hover:text-destructive" disabled={isDeleting} onClick={() => onDelete(monitor.id)}>
+                  {isDeleting ? '...' : 'Del'}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Delete monitor</TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </CardContent>
