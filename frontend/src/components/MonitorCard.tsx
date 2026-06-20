@@ -61,7 +61,10 @@ export default function MonitorCard({
             </div>
             <p className="text-xs text-muted-foreground truncate mt-0.5">{monitor.url}</p>
             <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
-              {lastChecked && <span>Checked {lastChecked}</span>}
+              {isKeepAlive && latestCheck?.error && (
+                <span className={latestCheck.status === 'UP' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>{latestCheck.error}</span>
+              )}
+              {lastChecked && <span>· {lastChecked}</span>}
               {!isKeepAlive && latestCheck?.responseTime != null && (
                 <span>{latestCheck.responseTime}ms</span>
               )}

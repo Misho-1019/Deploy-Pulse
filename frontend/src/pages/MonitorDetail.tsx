@@ -139,7 +139,7 @@ export default function MonitorDetail() {
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden sm:table-cell">Code</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden sm:table-cell">Response</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Time</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden sm:table-cell">Error</th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden sm:table-cell">Reason</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -153,7 +153,9 @@ export default function MonitorDetail() {
                   <td className="px-4 py-3 hidden sm:table-cell">{check.statusCode ?? '-'}</td>
                   <td className="px-4 py-3 hidden sm:table-cell">{check.responseTime != null ? `${check.responseTime}ms` : '-'}</td>
                   <td className="px-4 py-3 text-muted-foreground">{formatTime(check.checkedAt)}</td>
-                  <td className="px-4 py-3 text-destructive text-xs max-w-48 truncate hidden sm:table-cell">{check.error || '-'}</td>
+                  <td className={`px-4 py-3 text-xs max-w-48 truncate hidden sm:table-cell ${check.status === 'UP' ? 'text-green-600 dark:text-green-400' : 'text-destructive'}`}>
+                    {check.error || (check.status === 'UP' ? 'Healthy' : 'Error')}
+                  </td>
                 </tr>
               ))}
             </tbody>
