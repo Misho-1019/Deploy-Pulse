@@ -15,6 +15,7 @@ export interface Monitor {
   createdAt: string;
   updatedAt: string;
   checks?: Check[];
+  latestCheck?: Check | null;
 }
 
 export interface Check {

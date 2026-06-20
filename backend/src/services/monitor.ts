@@ -71,6 +71,13 @@ export async function getMonitors(userId: string) {
   return prisma.monitor.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
+    include: {
+      checks: {
+        orderBy: { checkedAt: "desc" },
+        take: 1,
+        select: { status: true, responseTime: true, checkedAt: true },
+      },
+    },
   });
 }
 

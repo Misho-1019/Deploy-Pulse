@@ -12,16 +12,6 @@ interface Props {
   isDeleting?: boolean;
 }
 
-const INTERVAL_LABELS: Record<number, string> = {
-  60: '1m',
-  120: '2m',
-  300: '5m',
-  600: '10m',
-  900: '15m',
-  1800: '30m',
-  3600: '1h',
-};
-
 export default function MonitorCard({
   monitor,
   onEdit,
@@ -32,99 +22,76 @@ export default function MonitorCard({
   const isKeepAlive = monitor.mode === 'KEEP_ALIVE';
   const hasEmail = monitor.channels.includes('EMAIL');
   const hasSlack = monitor.channels.includes('SLACK');
+  const latestCheck = monitor.checks?.[0] ?? monitor.latestCheck ?? null;
+  const lastChecked = latestCheck
+    ? formatSince(new Date(latestCheck.checkedAt).getTime())
+    : null;
 
   return (
     <Card className={isKeepAlive
       ? 'border-purple-200 dark:border-purple-900/50 bg-purple-50/30 dark:bg-purple-950/20 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200'
       : 'hover:shadow-md hover:-translate-y-0.5 transition-all duration-200'
     }>
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between gap-2">
+      <CardContent className="p-3">
+        <div className="flex items-center justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
+            <div className="flex items-center gap-2">
               {!isKeepAlive && (
-                <span
-                  className={`inline-block w-2 h-2 rounded-full shrink-0 ${
-                    monitor.status === 'UP'
-                      ? 'bg-green-500'
-                      : monitor.status === 'DOWN'
-                        ? 'bg-red-500'
-                        : 'bg-muted-foreground'
-                  }`}
-                />
+                <span className={`shrink-0 w-2 h-2 rounded-full animate-pulse ${
+                  monitor.status === 'UP' ? 'bg-green-500' :
+                  monitor.status === 'DOWN' ? 'bg-red-500' :
+                  'bg-muted-foreground'
+                }`} />
               )}
-              <Link
-                to={`/app/monitors/${monitor.id}`}
-                className="font-medium truncate hover:text-primary transition-colors"
-              >
+              <Link to={`/app/monitors/${monitor.id}`} className="font-medium text-sm truncate hover:text-primary transition-colors">
                 {monitor.name}
               </Link>
+              <Badge variant={isKeepAlive ? 'secondary' : 'default'} className="shrink-0 text-[10px]">
+                {isKeepAlive ? 'Keep Alive' : 'Monitor'}
+              </Badge>
             </div>
-            <p className="text-sm text-muted-foreground truncate">{monitor.url}</p>
-            {isKeepAlive && (
-              <p className="text-xs text-purple-600 font-medium mt-1 flex items-center gap-1">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
-                Keeping alive &middot; every {INTERVAL_LABELS[monitor.interval] || `${monitor.interval}s`}
-              </p>
-            )}
+            <p className="text-xs text-muted-foreground truncate mt-0.5">{monitor.url}</p>
+            <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+              {lastChecked && <span>Checked {lastChecked}</span>}
+              {!isKeepAlive && latestCheck?.responseTime != null && (
+                <span>{latestCheck.responseTime}ms</span>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            <Button variant="ghost" size="sm" onClick={() => onEdit(monitor)}>
-              Edit
-            </Button>
-            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" disabled={isDeleting} onClick={() => onDelete(monitor.id)}>
-              {isDeleting ? 'Deleting...' : 'Delete'}
+            {!isKeepAlive && (
+              <div className="flex items-center gap-1 mr-1">
+                <button
+                  onClick={() => onToggleChannel(monitor.id, 'EMAIL')}
+                  className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                    hasEmail ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400' : 'bg-muted text-muted-foreground'
+                  }`}
+                >📧</button>
+                <button
+                  onClick={() => onToggleChannel(monitor.id, 'SLACK')}
+                  className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                    hasSlack ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-muted text-muted-foreground'
+                  }`}
+                >💬</button>
+              </div>
+            )}
+            <Button variant="ghost" size="sm" className="h-7 px-1.5 text-[10px]" onClick={() => onEdit(monitor)}>Edit</Button>
+            <Button variant="ghost" size="sm" className="h-7 px-1.5 text-[10px] text-destructive hover:text-destructive" disabled={isDeleting} onClick={() => onDelete(monitor.id)}>
+              {isDeleting ? '...' : 'Del'}
             </Button>
           </div>
         </div>
-
-        <div className="flex flex-wrap items-center gap-2 mt-3">
-          <Badge variant={isKeepAlive ? 'secondary' : 'default'}>
-            {isKeepAlive ? 'Keep Alive' : 'Full Monitoring'}
-          </Badge>
-
-          {!isKeepAlive && (
-            <Badge variant={
-              monitor.status === 'UP' ? 'outline' :
-              monitor.status === 'DOWN' ? 'destructive' : 'secondary'
-            }>
-              {monitor.status}
-            </Badge>
-          )}
-
-          {!isKeepAlive && (
-            <span className="text-xs text-muted-foreground">
-              Check every {INTERVAL_LABELS[monitor.interval] || `${monitor.interval}s`}
-            </span>
-          )}
-        </div>
-
-        {!isKeepAlive && (
-          <div className="flex items-center gap-2 mt-3 pt-3 border-t">
-            <span className="text-xs text-muted-foreground">Notify via:</span>
-            <button
-              onClick={() => onToggleChannel(monitor.id, 'EMAIL')}
-              className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
-                hasEmail
-                  ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                  : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              📧 Email
-            </button>
-            <button
-              onClick={() => onToggleChannel(monitor.id, 'SLACK')}
-              className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors ${
-                hasSlack
-                  ? 'bg-green-500/10 text-green-600 dark:text-green-400'
-                  : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              💬 Slack
-            </button>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
+}
+
+function formatSince(timestamp: number): string {
+  const seconds = Math.floor((Date.now() - timestamp) / 1000);
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
 }

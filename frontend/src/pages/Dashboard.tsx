@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/button';
+import { Card, CardContent } from '../components/ui/card';
 import { toast } from 'sonner';
 import * as monitorsApi from '../api/monitors';
 import * as billingApi from '../api/billing';
@@ -23,6 +24,7 @@ export default function Dashboard() {
     data: monitors = [],
     isLoading,
     isError,
+    dataUpdatedAt,
   } = useQuery({
     queryKey: ['monitors'],
     queryFn: monitorsApi.getMonitors,
@@ -130,11 +132,45 @@ export default function Dashboard() {
               </span>
             )}
           </p>
+          {dataUpdatedAt && monitors.length > 0 && (
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              Auto-refreshing every 15s · Updated {formatSince(dataUpdatedAt)}
+            </p>
+          )}
         </div>
         <Button onClick={() => setFormOpen(true)} disabled={createMutation.isPending}>
           + New Monitor
         </Button>
       </div>
+
+      {monitors.length > 0 && (
+        <div className="grid grid-cols-4 gap-3 mb-4">
+          <Card className="border-border">
+            <CardContent className="p-3 text-center">
+              <div className="text-lg font-bold">{monitors.length}</div>
+              <div className="text-[10px] text-muted-foreground uppercase">Total</div>
+            </CardContent>
+          </Card>
+          <Card className="border-border">
+            <CardContent className="p-3 text-center">
+              <div className="text-lg font-bold text-green-600 dark:text-green-400">{monitors.filter(m => m.status === 'UP').length}</div>
+              <div className="text-[10px] text-muted-foreground uppercase">Up</div>
+            </CardContent>
+          </Card>
+          <Card className="border-border">
+            <CardContent className="p-3 text-center">
+              <div className="text-lg font-bold text-red-600 dark:text-red-400">{monitors.filter(m => m.status === 'DOWN').length}</div>
+              <div className="text-[10px] text-muted-foreground uppercase">Down</div>
+            </CardContent>
+          </Card>
+          <Card className="border-border">
+            <CardContent className="p-3 text-center">
+              <div className="text-lg font-bold">{monitors.filter(m => m.status === 'PENDING').length}</div>
+              <div className="text-[10px] text-muted-foreground uppercase">Pending</div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {isError && (
         <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded text-sm mb-4">
@@ -156,9 +192,17 @@ export default function Dashboard() {
       {isLoading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-card rounded-lg border p-5 animate-pulse">
-              <div className="h-4 bg-muted rounded w-1/3 mb-2" />
-              <div className="h-3 bg-muted rounded w-1/2" />
+            <div key={i} className="bg-card rounded-lg border p-3 animate-pulse">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 bg-muted rounded-full" />
+                <div className="h-3 bg-muted rounded w-1/3" />
+                <div className="h-3 bg-muted rounded w-12" />
+              </div>
+              <div className="h-2.5 bg-muted rounded w-1/2 mt-1" />
+              <div className="flex items-center gap-2 mt-1">
+                <div className="h-2 bg-muted rounded w-16" />
+                <div className="h-2 bg-muted rounded w-8" />
+              </div>
             </div>
           ))}
         </div>
@@ -214,4 +258,14 @@ export default function Dashboard() {
       />
     </div>
   );
+}
+
+function formatSince(ts: number): string {
+  const seconds = Math.floor((Date.now() - ts) / 1000);
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
 }
