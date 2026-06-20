@@ -37,6 +37,8 @@ services:
       - ./backend/.env
     environment:
       - NODE_ENV=production
+      - STRIPE_PRICE_STARTER_ID=${STRIPE_PRICE_STARTER_ID}
+      - STRIPE_PRICE_PRO_ID=${STRIPE_PRICE_PRO_ID}
 
   frontend:
     build: ./frontend
