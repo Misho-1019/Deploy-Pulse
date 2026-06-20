@@ -2,7 +2,7 @@ FROM node:22-slim AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm install
+RUN npm install --include=optional
 
 COPY . .
 RUN npm run build
