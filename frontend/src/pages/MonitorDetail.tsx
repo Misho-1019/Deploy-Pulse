@@ -34,6 +34,8 @@ export default function MonitorDetail() {
     enabled: !!id,
   });
 
+  const [visibleCount, setVisibleCount] = useState(20);
+
   if (isLoading) {
     return (
       <div className="animate-pulse space-y-4">
@@ -56,7 +58,6 @@ export default function MonitorDetail() {
   }
 
   const checks: Check[] = monitor.checks || [];
-  const [visibleCount, setVisibleCount] = useState(20);
   const displayedChecks = checks.slice(0, visibleCount);
   const hasMore = checks.length > visibleCount;
 
