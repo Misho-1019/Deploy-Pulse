@@ -1,0 +1,4 @@
+deploypulse.YOUR_DROPLET_IP.nip.io {
+    reverse_proxy /api/* backend:3000
+    reverse_proxy /* frontend:80
+}
