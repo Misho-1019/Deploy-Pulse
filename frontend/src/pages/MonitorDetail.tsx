@@ -107,6 +107,12 @@ export default function MonitorDetail() {
         </Card>
       </div>
 
+      {monitor.mode === 'KEEP_ALIVE' && (
+        <div className="mb-4 bg-blue-500/5 border border-blue-500/10 text-blue-700 dark:text-blue-400 px-4 py-2 rounded text-xs">
+          Keep Alive pings prevent your app from sleeping. The first ping after inactivity may take longer while your app cold-starts. Checks wait up to 50 seconds for a response.
+        </div>
+      )}
+
       {monitor.mode === 'FULL_MONITORING' && (
         <>
           <UptimeBadges monitorId={monitor.id} />

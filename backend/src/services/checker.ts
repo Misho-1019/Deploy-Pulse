@@ -2,7 +2,7 @@ import { prisma } from "../lib/prisma.js";
 import type { CheckStatus } from "../generated/prisma/client.js";
 import { dispatchDownAlert, dispatchRecoveryAlert } from "./alert.js";
 
-const CHECK_TIMEOUT_MS = 10_000;
+const CHECK_TIMEOUT_MS = 50_000;
 
 export async function performCheck(
   monitorId: string,

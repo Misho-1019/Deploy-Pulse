@@ -130,9 +130,15 @@ export default function MonitorForm({ open, editing, minInterval = 300, onClose,
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {mode === 'KEEP_ALIVE'
-                ? 'Just pings to prevent sleep. No alerts.'
+                ? 'Pings your app to prevent sleep. No alerts. No status tracking.'
                 : 'Pings + uptime, response time, and alerts.'}
             </p>
+            {mode === 'KEEP_ALIVE' && (
+              <div className="mt-2 bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 px-3 py-2 rounded text-xs">
+                Checks wait up to <strong>50 seconds</strong> for your app to respond.
+                Free-tier Render, Railway, and Heroku apps may take 15-30 seconds to cold-start.
+              </div>
+            )}
           </div>
 
           <div>
