@@ -101,35 +101,38 @@ The project was built to be both a **production-ready SaaS** and a **strong full
 
 ### 1️⃣ Landing Page — Hero & Features
 
-![Landing Page](views/landing-hero.png)
+![Landing Page](views/Screenshot%202026-06-20%20230443.png)
+![Landing Page](views/Screenshot%202026-06-20%20230459.png)
 
 ### 2️⃣ Landing Page — Dark Mode & Pricing
 
-![Landing Dark](views/landing-pricing-dark.png)
+![Landing Dark](views/Screenshot%202026-06-20%20230508.png)
 
 ### 3️⃣ Dashboard — Monitors, Stats Bar & Plan Badge
 
-![Dashboard](views/dashboard-monitors.png)
+![Dashboard](views/Screenshot%202026-06-20%20230609.png)
 
 ### 4️⃣ Create Monitor — Dialog with Mode Toggle
 
-![Create Monitor](views/create-monitor-dialog.png)
+![Create Monitor](views/Screenshot%202026-06-21%20021856.png)
+![Create Monitor](views/Screenshot%202026-06-21%20021905.png)
 
 ### 5️⃣ Monitor Detail — Charts, Uptime & Incidents
 
-![Monitor Detail](views/monitor-detail-charts.png)
+![Monitor Detail](views/Screenshot%202026-06-21%20022221.png)
+![Monitor Detail](views/Screenshot%202026-06-21%20022234.png)
 
 ### 6️⃣ Settings — Billing Tab with Plan Cards
 
-![Settings Billing](views/settings-billing.png)
+![Settings Billing](views/Screenshot%202026-06-21%20022025.png)
 
-### 7️⃣ Check History Table
+### 7️⃣ Settings — Notifications Tab
 
-![Check History](views/check-history-table.png)
+![Settings Notifications](views/Screenshot%202026-06-21%20052045.png)
 
 ### 8️⃣ Mobile Dashboard
 
-![Mobile Dashboard](views/mobile-dashboard.png)
+![Mobile Dashboard](views/Screenshot%202026-06-21%20022455.png)
 
 ---
 
